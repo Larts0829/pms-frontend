@@ -45,6 +45,11 @@ const mockProject = {
     name: 'John Doe',
     email: 'john.doe@company.com',
   },
+  engineerInCharge: {
+    id: 'user_002',
+    name: 'Jane Smith',
+    email: 'jane.smith@company.com',
+  },
   startDate: '2025-01-15',
   endDate: '2026-06-30',
   actualEndDate: null,
@@ -97,12 +102,16 @@ function ProjectDetailsPage() {
   const { canEdit, canDelete, hasRole, MODULES, ROLES } = usePermissions()
 
   const isFinancialRole = hasRole([ROLES.ADMIN, ROLES.OPERATIONS_STAFF])
+  const isProjectEngineer = hasRole(ROLES.PROJECT_ENGINEER)
   const isClientViewer = hasRole(ROLES.VIEWER)
   const assignedProjectIds = user?.assignedProjectIds?.length
     ? user.assignedProjectIds
     : ['prj_001']
-  const canViewCurrentProject = !isClientViewer || assignedProjectIds.includes(id)
-  
+  // Restrict engineer to only their assigned project
+  const canViewCurrentProject = isProjectEngineer
+    ? id === assignedProjectIds[0]
+    : (!isClientViewer || assignedProjectIds.includes(id))
+
   const [activeTab, setActiveTab] = useState('overview')
 
   // Calculate project metrics
@@ -113,6 +122,9 @@ function ProjectDetailsPage() {
   const visibleRecentDocuments = isFinancialRole
     ? recentDocuments
     : recentDocuments.filter((doc) => !doc.name.toLowerCase().includes('budget'))
+
+  // Utility for always visible text
+  const alwaysVisible = 'text-dark-900'
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
@@ -151,10 +163,10 @@ function ProjectDetailsPage() {
           </Link>
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-white">{mockProject.name}</h1>
+              <h1 className="text-2xl font-bold text-dark-900">{mockProject.name}</h1>
               <StatusBadge status={mockProject.status} />
             </div>
-            <p className="text-dark-400 mt-1">
+            <p className="text-dark-700 mt-1">
               Code: {mockProject.code} • {mockProject.type.charAt(0).toUpperCase() + mockProject.type.slice(1)} Project
             </p>
           </div>
@@ -184,8 +196,8 @@ function ProjectDetailsPage() {
                 <BarChart3 className="h-5 w-5 text-yellow-500" />
               </div>
               <div>
-                <p className="text-sm text-dark-400">Progress</p>
-                <p className="text-xl font-bold text-white">{mockProject.progress}%</p>
+                <p className={`text-sm ${alwaysVisible}`}>Progress</p>
+                <p className={`text-xl font-bold ${alwaysVisible}`}>{mockProject.progress}%</p>
               </div>
             </div>
           </CardBody>
@@ -198,8 +210,8 @@ function ProjectDetailsPage() {
                   <DollarSign className="h-5 w-5 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-dark-400">Budget Used</p>
-                  <p className="text-xl font-bold text-white">{formatPercentage(budgetUtilization)}</p>
+                  <p className={`text-sm ${alwaysVisible}`}>Budget Used</p>
+                  <p className={`text-xl font-bold ${alwaysVisible}`}>{formatPercentage(budgetUtilization)}</p>
                 </div>
               </div>
             </CardBody>
@@ -212,8 +224,8 @@ function ProjectDetailsPage() {
                 <Calendar className="h-5 w-5 text-purple-400" />
               </div>
               <div>
-                <p className="text-sm text-dark-400">Days Remaining</p>
-                <p className="text-xl font-bold text-white">{daysRemaining}</p>
+                <p className={`text-sm ${alwaysVisible}`}>Days Remaining</p>
+                <p className={`text-xl font-bold ${alwaysVisible}`}>{daysRemaining}</p>
               </div>
             </div>
           </CardBody>
@@ -225,8 +237,8 @@ function ProjectDetailsPage() {
                 <Users className="h-5 w-5 text-green-400" />
               </div>
               <div>
-                <p className="text-sm text-dark-400">Team Size</p>
-                <p className="text-xl font-bold text-white">{teamMembers.length}</p>
+                <p className={`text-sm ${alwaysVisible}`}>Team Size</p>
+                <p className={`text-xl font-bold ${alwaysVisible}`}>{teamMembers.length}</p>
               </div>
             </div>
           </CardBody>
@@ -505,6 +517,13 @@ function ProjectDetailsPage() {
               )
             }
           />
+          {isFinancialRole && mockProject.engineerInCharge && (
+            <CardBody className="border-b border-dark-700">
+              <p className="text-sm text-dark-400 mb-2">Engineer In-Charge</p>
+              <p className="text-base text-white font-semibold">{mockProject.engineerInCharge.name}</p>
+              <p className="text-sm text-dark-500">{mockProject.engineerInCharge.email}</p>
+            </CardBody>
+          )}
           <CardBody>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {teamMembers.map((member) => (

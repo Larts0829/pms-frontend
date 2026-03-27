@@ -71,7 +71,7 @@ export function AuthProvider({ children }) {
     'engineer@westwoodpms.com': {
       id: 'user_002', firstName: 'Project', lastName: 'Engineer',
       email: 'engineer@westwoodpms.com', role: 'project_engineer',
-      avatar: null, password: 'engineer123', assignedProjectIds: ['prj_001', 'prj_002'],
+      avatar: null, password: 'engineer123', assignedProjectIds: ['prj_001'],
     },
     'staff@westwoodpms.com': {
       id: 'user_003', firstName: 'Operations', lastName: 'Staff',

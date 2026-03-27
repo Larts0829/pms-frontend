@@ -6,6 +6,7 @@ import {
   Calendar,
   Eye,
   Plus,
+  Edit,
   TrendingUp,
   Clock,
   CheckCircle,
@@ -105,16 +106,25 @@ function ProgressListPage() {
   const { user } = useAuth()
   const { canCreate, hasRole, MODULES, ROLES } = usePermissions()
 
+  const isAdminOrOps = hasRole([ROLES.ADMIN, ROLES.OPERATIONS_STAFF])
+  const isProjectEngineer = hasRole(ROLES.PROJECT_ENGINEER)
   const isClientViewer = hasRole(ROLES.VIEWER)
+
   const assignedProjectIds = user?.assignedProjectIds?.length
     ? user.assignedProjectIds
     : ['prj_001']
+
+  const allowedProjectIds = isAdminOrOps
+    ? null
+    : isProjectEngineer
+      ? [assignedProjectIds[0]]
+      : assignedProjectIds
   
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
 
   const accessibleEntries = mockProgressEntries.filter((entry) => {
-    if (isClientViewer && !assignedProjectIds.includes(entry.project.id)) {
+    if (allowedProjectIds && !allowedProjectIds.includes(entry.project.id)) {
       return false
     }
     return true
@@ -301,6 +311,13 @@ function ProgressListPage() {
                         View Details
                       </Button>
                     </Link>
+                    {(hasRole([ROLES.ADMIN, ROLES.OPERATIONS_STAFF])) && (
+                      <Link to={`/progress/update?project=${entry.project.id}`}>
+                        <Button variant="outline" size="sm" leftIcon={<Edit className="h-4 w-4" />}>
+                          Override Update
+                        </Button>
+                      </Link>
+                    )}
                   </div>
                 </div>
               </CardBody>

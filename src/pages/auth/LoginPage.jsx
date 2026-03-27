@@ -7,6 +7,7 @@ import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import Button from '../../components/common/Button'
 import { FormInput } from '../../components/forms/FormFields'
+import wcdLogo from '../../images/wcd_logo.png'
 
 // Validation schema
 const loginSchema = z.object({
@@ -45,10 +46,13 @@ function LoginPage() {
 
   return (
     <div>
-      {/* Header */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-dark-900">Welcome back</h2>
-        <p className="text-dark-600 mt-2">
+      {/* Logo and Header - Centered, Large */}
+      <div className="flex flex-col items-center mb-8 mt-8">
+        <img src={wcdLogo} alt="Westwood Logo" className="h-32 w-32 mb-4 object-contain mx-auto" />
+        <h1 className="text-4xl font-extrabold text-dark-900 tracking-tight text-center mb-2">WORKS</h1>
+        <p className="text-base font-semibold text-yellow-700 text-center mb-1">Westwood Operations &amp; Resource Knowledge System</p>
+        <h2 className="text-2xl font-bold text-dark-900 text-center mt-2">Welcome back</h2>
+        <p className="text-dark-600 mt-2 text-center">
           Sign in to access WORKS fit-out project operations
         </p>
       </div>

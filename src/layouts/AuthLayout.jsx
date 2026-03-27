@@ -28,26 +28,15 @@ function AuthLayout() {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col justify-center items-center w-full p-12">
-          {/* Logo */}
-          <div className="flex items-center gap-4 mb-12">
-            <img src={wcdLogo} alt="Westwood" className="h-16 w-16 object-contain" />
-            <div>
-              <h1 className="text-3xl font-bold text-dark-900">WORKS</h1>
-              <p className="text-yellow-600 font-medium">Westwood Operations &amp; Resource Knowledge System</p>
-            </div>
-          </div>
-
-          {/* Tagline */}
-          <div className="text-center max-w-lg">
-            <h2 className="text-4xl font-bold text-dark-900 mb-4">
-              Building Excellence,
-              <span className="text-yellow-500"> Delivering Quality</span>
-            </h2>
-            <p className="text-dark-600 text-lg">
-              Streamline finishing and fit-out project delivery with one professional platform for engineering, operations, and client visibility.
-            </p>
-          </div>
+        <div className="relative z-10 flex flex-col justify-center items-center w-full h-full p-0">
+          {/* Large Centered Logo and Text */}
+          <img src={wcdLogo} alt="Westwood" className="h-44 w-44 object-contain mb-6 mx-auto" />
+          <h1 className="text-5xl font-extrabold text-dark-900 tracking-tight text-center mb-3">WORKS</h1>
+          <p className="text-lg font-semibold text-yellow-700 text-center mb-2">Westwood Operations &amp; Resource Knowledge System</p>
+          <h2 className="text-3xl font-bold text-dark-900 text-center mt-2">Building Excellence, <span className="text-yellow-500">Delivering Quality</span></h2>
+          <p className="text-dark-600 mt-4 text-center max-w-md">
+            Streamline finishing and fit-out project delivery with one professional platform for engineering, operations, and client visibility.
+          </p>
 
           {/* Features */}
           

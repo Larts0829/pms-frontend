@@ -1,6 +1,18 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Building2 } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Building2 } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
 import wcdLogo from '../images/wcd_logo.png'
+import img1 from '../images/portfolio-images/img1.jpg'
+import img1_2 from '../images/portfolio-images/img1-2.jpg'
+import img1_3 from '../images/portfolio-images/img1-3.jpg'
+import img2 from '../images/portfolio-images/img2.jpg'
+import img2_1 from '../images/portfolio-images/img2-1.jpg'
+import img2_4 from '../images/portfolio-images/img2-4.jpg'
+import img3 from '../images/portfolio-images/img3.jpg'
+import img3_2 from '../images/portfolio-images/img3-2.jpg'
+import img3_3 from '../images/portfolio-images/img3-3.jpg'
+import img3_4 from '../images/portfolio-images/img3-4.jpg'
+import img4 from '../images/portfolio-images/img4.jpg'
 
 function LandingPage() {
   const services = [
@@ -15,25 +27,45 @@ function LandingPage() {
   ]
 
   const portfolioItems = [
-    {
-      title: 'Interior Design and Fit-Out',
-      category: 'Feature Project',
-      image:
-        'https://images.unsplash.com/photo-1615874959474-d609969a20ed?auto=format&fit=crop&w=1400&q=80',
-    },
-    {
-      title: 'Institutional Building Works',
-      category: 'Feature Project',
-      image:
-        'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=1400&q=80',
-    },
-    {
-      title: 'Commercial Renovation Delivery',
-      category: 'Feature Project',
-      image:
-        'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1400&q=80',
-    },
+    { title: 'Food Channel - Modern Restaurant', category: 'Commercial Fit-Out', image: img1 },
+    { title: 'Food Channel - Dining Area', category: 'Commercial Fit-Out', image: img1_2 },
+    { title: 'Food Channel - Alternate View', category: 'Commercial Fit-Out', image: img1_3 },
+    { title: 'Contemporary Learning Space', category: 'Institutional Interior', image: img2 },
+    { title: 'Learning Space - Angle 2', category: 'Institutional Interior', image: img2_1 },
+    { title: 'Learning Space - Angle 3', category: 'Institutional Interior', image: img2_4 },
+    { title: 'Executive Office Suite', category: 'Corporate Office', image: img3 },
+    { title: 'Office Suite - Meeting Area', category: 'Corporate Office', image: img3_2 },
+    { title: 'Office Suite - Lounge', category: 'Corporate Office', image: img3_3 },
+    { title: 'Office Suite - Reception', category: 'Corporate Office', image: img3_4 },
+    { title: 'Resort Poolside', category: 'Leisure & Hospitality', image: img4 },
   ]
+
+  // Carousel state and fake loading
+  const [carouselIdx, setCarouselIdx] = useState(0)
+  const [carouselLoading, setCarouselLoading] = useState(true)
+  const carouselTimeout = useRef(null)
+
+  useEffect(() => {
+    setCarouselLoading(true)
+    // Simulate API delay for realism
+    const timer = setTimeout(() => setCarouselLoading(false), 900)
+    return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    if (carouselLoading) return
+    carouselTimeout.current = setTimeout(() => {
+      setCarouselIdx((prev) => (prev + 1) % portfolioItems.length)
+    }, 4000)
+    return () => clearTimeout(carouselTimeout.current)
+  }, [carouselIdx, carouselLoading, portfolioItems.length])
+
+  const goToSlide = (idx) => {
+    setCarouselIdx(idx)
+    clearTimeout(carouselTimeout.current)
+  }
+  const prevSlide = () => goToSlide((carouselIdx - 1 + portfolioItems.length) % portfolioItems.length)
+  const nextSlide = () => goToSlide((carouselIdx + 1) % portfolioItems.length)
 
   const previousClients = [
     {
@@ -69,9 +101,9 @@ function LandingPage() {
   ]
 
   return (
-    <div className="bg-white reveal">
+    <div className="bg-white min-h-screen">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-dark-200">
+      <nav className="sticky top-0 z-50 bg-white border-b border-dark-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
@@ -79,10 +111,10 @@ function LandingPage() {
               <span className="text-xl font-bold text-dark-900">WORKS</span>
             </div>
             <div className="hidden md:flex items-center gap-8">
-              <a href="#about" className="text-dark-600 hover:text-yellow-600 font-medium text-sm">About</a>
-              <a href="#services" className="text-dark-600 hover:text-yellow-600 font-medium text-sm">Services</a>
-              <a href="#portfolio" className="text-dark-600 hover:text-yellow-600 font-medium text-sm">Portfolio</a>
-              <a href="#clients" className="text-dark-600 hover:text-yellow-600 font-medium text-sm">Clients</a>
+              <a href="#about" className="text-dark-600 hover:text-yellow-600 font-medium text-sm" onClick={e => {e.preventDefault(); window.scrollTo({top: 0, behavior: 'smooth'});}}>About</a>
+              <a href="#services" className="text-dark-600 hover:text-yellow-600 font-medium text-sm" onClick={e => {e.preventDefault(); document.getElementById('services')?.scrollIntoView({behavior: 'smooth'});}}>Services</a>
+              <a href="#portfolio" className="text-dark-600 hover:text-yellow-600 font-medium text-sm" onClick={e => {e.preventDefault(); document.getElementById('portfolio')?.scrollIntoView({behavior: 'smooth'});}}>Portfolio</a>
+              <a href="#clients" className="text-dark-600 hover:text-yellow-600 font-medium text-sm" onClick={e => {e.preventDefault(); document.getElementById('clients')?.scrollIntoView({behavior: 'smooth'});}}>Clients</a>
               <Link to="/inquire" className="text-dark-600 hover:text-yellow-600 font-medium text-sm">Inquire</Link>
               <Link to="/login" className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition font-medium">Sign In</Link>
             </div>
@@ -90,63 +122,37 @@ function LandingPage() {
         </div>
       </nav>
 
-      {/* About Section */}
-      <section id="about" className="bg-yellow-50 pt-20 pb-20 px-4 sm:px-6 lg:px-8 border-b border-dark-200 reveal-up">
-        <div className="max-w-7xl mx-auto">
-          <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-12 items-center overflow-hidden rounded-3xl border border-yellow-200/80 bg-gradient-to-br from-yellow-50 via-white to-yellow-100 p-8 lg:p-10">
-            <div className="pointer-events-none absolute inset-0 opacity-10">
-              <img
-                src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1800&q=80"
-                alt=""
-                aria-hidden="true"
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="pointer-events-none absolute -right-16 top-6 h-64 w-64 rounded-full bg-yellow-300/25 blur-3xl"></div>
-            <div className="pointer-events-none absolute -left-10 bottom-2 h-56 w-56 rounded-full bg-yellow-400/20 blur-3xl"></div>
-            <div>
-              <p className="text-yellow-700 font-semibold uppercase tracking-wider mb-3">About Us</p>
-              <div className="mb-5 inline-flex items-center gap-4 rounded-2xl border border-yellow-200 bg-white/90 px-5 py-4 shadow-sm ring-1 ring-yellow-100">
-                <img src={wcdLogo} alt="WORKS logo" className="h-16 w-16 object-contain md:h-20 md:w-20" />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-yellow-700">Westwood</p>
-                  <p className="text-sm font-semibold text-dark-700">Operations & Resource Knowledge System</p>
-                </div>
-              </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-dark-900 mb-6 leading-tight">
-                WORKS
-              </h1>
-              <p className="text-xl text-dark-600 mb-8">
-                Westwood Operations &amp; Resource Knowledge System
-              </p>
-              <p className="text-lg text-dark-700 mb-8 leading-8">
-                Formed in 2018, Westwood Development Corporation (WDC) engages in residential, commercial,
-                industrial, and institutional building structures. WDC is on the road for excellence in a diverse
-                range of markets because of the extensive experience in the industry driven by the broadness and
-                depth of our team, by which all take pride in doing the best job for our clients at the best value possible.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/inquire" className="inline-flex items-center justify-center px-8 py-4 bg-yellow-500 text-white rounded-lg font-bold hover:bg-yellow-600 transition shadow-sm">
-                  Book a Consultation <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-                <a href="#clients" className="inline-flex items-center justify-center px-8 py-4 border-2 border-yellow-500 text-yellow-700 rounded-lg font-bold hover:bg-yellow-100 transition">View Clients</a>
+
+      {/* Hero Section - Modern, Animated, Professional */}
+      <section className="bg-yellow-50 pt-24 pb-24 px-4 sm:px-6 lg:px-8 border-b border-dark-200">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 animate-fadein-slidein">
+          <div className="flex-1 flex flex-col items-start">
+            <div className="mb-6 inline-flex items-center gap-4 rounded-2xl border border-yellow-200 bg-white/90 px-6 py-5 shadow-sm ring-1 ring-yellow-100">
+              <img src={wcdLogo} alt="WORKS logo" className="h-24 w-24 object-contain" />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-yellow-700">Westwood</p>
+                <p className="text-base font-semibold text-dark-700">WORKS Project Management System</p>
               </div>
             </div>
-            <div className="relative bg-white rounded-2xl p-6 border border-dark-200 shadow-sm">
-              <img
-                src="https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?auto=format&fit=crop&w=1400&q=80"
-                alt="Westwood construction project"
-                className="aspect-video rounded-xl object-cover"
-              />
-              <div className="mt-6 grid grid-cols-2 gap-4">
-                <div className="rounded-lg border border-dark-200 p-4">
-                  <p className="text-2xl font-bold text-dark-900">2018</p>
-                  <p className="text-sm text-dark-600">Company Founded</p>
-                </div>
-                <div className="rounded-lg border border-dark-200 p-4">
-                  <p className="text-2xl font-bold text-dark-900">ASEAN</p>
-                  <p className="text-sm text-dark-600">Growth Vision</p>
-                </div>
+            <h1 className="text-6xl font-extrabold text-dark-900 mb-6 leading-tight tracking-tight" style={{letterSpacing: '-0.03em'}}>WORKS</h1>
+            <p className="text-2xl text-dark-700 mb-10 max-w-xl font-medium">
+              The modern platform for managing, tracking, and delivering construction projects—connecting engineering, operations, and clients in one place.
+            </p>
+            <a href="#portfolio" className="inline-flex items-center justify-center px-10 py-4 bg-yellow-500 text-white rounded-xl font-bold text-lg shadow-lg hover:bg-yellow-600 transition-all duration-200 focus:ring-4 focus:ring-yellow-200 scroll-smooth">
+              View Projects <ArrowRight className="ml-3 h-6 w-6" />
+            </a>
+          </div>
+          <div className="flex-1 flex flex-col items-center">
+            <img
+              src="https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?auto=format&fit=crop&w=1400&q=80"
+              alt="Westwood construction project"
+              className="aspect-video rounded-3xl object-cover border border-dark-200 shadow-xl w-full max-w-2xl animate-fadein"
+              style={{minHeight: 340}}
+            />
+            <div className="mt-8 grid grid-cols-2 gap-6 w-full max-w-xl">
+              <div className="rounded-xl border border-dark-200 p-6 bg-white/80 shadow">
+                <p className="text-3xl font-bold text-dark-900">2018</p>
+                <p className="text-base text-dark-600">Company Founded</p>
               </div>
             </div>
           </div>
@@ -182,36 +188,123 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* Portfolio Section */}
-      <section id="portfolio" className="py-20 px-4 sm:px-6 lg:px-8 bg-dark-50 reveal-up reveal-delay-1">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold text-dark-900 mb-4">Project Portfolio</h2>
-            <p className="text-xl text-dark-600">A snapshot of building, interior, and renovation work</p>
+      {/* Portfolio Section - 3D Carousel with 3 Columns */}
+      <section id="portfolio" className="py-24 px-4 sm:px-6 lg:px-8 bg-dark-50">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-4xl font-extrabold text-dark-900 mb-4 tracking-tight">Project Portfolio</h2>
+            <p className="text-xl text-dark-600">A showcase of our recent commercial, institutional, and leisure projects</p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {portfolioItems.map((item) => (
-              <article
-                key={item.title}
-                className="group card-lift rounded-xl overflow-hidden border border-dark-200 bg-white shadow-sm hover:shadow-lg"
-              >
-                <div className="overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="h-64 w-full object-cover media-zoom"
-                  />
+          <div className="relative flex flex-col items-center">
+            <div className="w-full max-w-4xl h-[420px] flex items-center justify-center relative">
+              {carouselLoading ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10 animate-fadein">
+                  <div className="w-16 h-16 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
                 </div>
-                <div className="p-6 transition-colors duration-300 group-hover:bg-yellow-50">
-                  <p className="text-xs tracking-wide uppercase font-semibold text-yellow-700 mb-2">{item.category}</p>
-                  <h3 className="text-xl font-bold text-dark-900 group-hover:text-yellow-700">{item.title}</h3>
-                </div>
-              </article>
-            ))}
+              ) : (
+                <>
+                  {/* Left (previous) image */}
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 transition-all duration-700"
+                    style={{width: '320px', height: '260px', transform: 'translateY(-50%) scale(0.8) rotateY(20deg)', opacity: 0.7, filter: 'blur(1px)', left: '2%'}}>
+                    <img
+                      src={portfolioItems[(carouselIdx - 1 + portfolioItems.length) % portfolioItems.length].image}
+                      alt={portfolioItems[(carouselIdx - 1 + portfolioItems.length) % portfolioItems.length].title}
+                      className="w-full h-full object-cover rounded-2xl border border-dark-100 shadow-md"
+                    />
+                  </div>
+                  {/* Center (active) image */}
+                  <div className="relative z-20 mx-8 transition-all duration-700" style={{width: '420px', height: '340px'}}>
+                    <img
+                      src={portfolioItems[carouselIdx].image}
+                      alt={portfolioItems[carouselIdx].title}
+                      className="w-full h-full object-cover rounded-3xl border-2 border-yellow-400 shadow-2xl animate-carousel-fade"
+                      style={{minHeight: 340}}
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-dark-900/70 to-transparent rounded-b-3xl">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-sm font-semibold uppercase tracking-wider text-yellow-400 drop-shadow">{portfolioItems[carouselIdx].category}</span>
+                        <span className="text-2xl font-bold text-white drop-shadow-lg">{portfolioItems[carouselIdx].title}</span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Right (next) image */}
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 z-10 transition-all duration-700"
+                    style={{width: '320px', height: '260px', transform: 'translateY(-50%) scale(0.8) rotateY(-20deg)', opacity: 0.7, filter: 'blur(1px)', right: '2%'}}>
+                    <img
+                      src={portfolioItems[(carouselIdx + 1) % portfolioItems.length].image}
+                      alt={portfolioItems[(carouselIdx + 1) % portfolioItems.length].title}
+                      className="w-full h-full object-cover rounded-2xl border border-dark-100 shadow-md"
+                    />
+                  </div>
+                  {/* Carousel Arrows */}
+                  <button
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-yellow-100 text-yellow-700 rounded-full p-2 shadow transition-all duration-200 z-30"
+                    onClick={prevSlide}
+                    aria-label="Previous project"
+                    disabled={carouselLoading}
+                    style={{pointerEvents: carouselLoading ? 'none' : 'auto'}}>
+                    <ArrowLeft className="h-7 w-7" />
+                  </button>
+                  <button
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-yellow-100 text-yellow-700 rounded-full p-2 shadow transition-all duration-200 z-30"
+                    onClick={nextSlide}
+                    aria-label="Next project"
+                    disabled={carouselLoading}
+                    style={{pointerEvents: carouselLoading ? 'none' : 'auto'}}>
+                    <ArrowRight className="h-7 w-7" />
+                  </button>
+                </>
+              )}
+            </div>
+            {/* Dots Indicator */}
+            <div className="flex gap-3 mt-8">
+              {portfolioItems.map((_, idx) => (
+                <button
+                  key={idx}
+                  className={`w-3 h-3 rounded-full border-2 transition-all duration-200 ${carouselIdx === idx ? 'bg-yellow-500 border-yellow-500 scale-125 shadow' : 'bg-white border-dark-200 hover:border-yellow-400'}`}
+                  onClick={() => goToSlide(idx)}
+                  aria-label={`Go to project ${idx + 1}`}
+                  disabled={carouselLoading}
+                  style={{pointerEvents: carouselLoading ? 'none' : 'auto'}}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
+/* Animations */
+<style jsx>{`
+  /* Animations */
+  .animate-fadein-slidein {
+    /* 3D Carousel Animations */
+    .animate-carousel-fade {
+      animation: carousel-fade 0.7s cubic-bezier(.4,0,.2,1);
+    }
+    @keyframes carousel-fade {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    animation: fadein-slidein 1.2s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes fadein-slidein {
+    0% { opacity: 0; transform: translateY(40px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadein {
+    animation: fadein 1.2s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes fadein {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  .animate-carousel-fade {
+    animation: carousel-fade 0.7s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes carousel-fade {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+`}</style>
 
       {/* Mission And Vision */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white border-y border-dark-200 reveal-up reveal-delay-2">
@@ -331,7 +424,7 @@ function LandingPage() {
           </div>
           <div className="border-t border-dark-200 pt-8">
             <div className="flex justify-between items-center">
-              <p className="text-dark-600 text-sm">&copy; 2022 All rights reserved.</p>
+              <p className="text-dark-600 text-sm">&copy; 2026 All rights reserved.</p>
               <div className="flex gap-4 text-sm text-dark-600">
                 <a href="#" className="hover:text-yellow-600">Privacy</a>
                 <a href="#" className="hover:text-yellow-600">Terms of Use</a>

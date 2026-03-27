@@ -103,6 +103,7 @@ function ProjectListPage() {
   const { canCreate, canEdit, canDelete, hasRole, MODULES, ROLES } = usePermissions()
 
   const isFinancialRole = hasRole([ROLES.ADMIN, ROLES.OPERATIONS_STAFF])
+  const isProjectEngineer = hasRole(ROLES.PROJECT_ENGINEER)
   const isClientViewer = hasRole(ROLES.VIEWER)
   
   const [searchQuery, setSearchQuery] = useState('')
@@ -114,9 +115,17 @@ function ProjectListPage() {
   const assignedProjectIds = user?.assignedProjectIds?.length
     ? user.assignedProjectIds
     : ['prj_001']
-  const roleScopedProjects = isClientViewer
-    ? mockProjects.filter((project) => assignedProjectIds.includes(project.id))
+
+  const allowedProjectIds = isFinancialRole
+    ? null
+    : isProjectEngineer
+      ? [assignedProjectIds[0]] // enforce 1 project assignment for engineer in UI
+      : assignedProjectIds
+
+  const roleScopedProjects = allowedProjectIds
+    ? mockProjects.filter((project) => allowedProjectIds.includes(project.id))
     : mockProjects
+
 
   const filteredProjects = roleScopedProjects
     .filter(project => {

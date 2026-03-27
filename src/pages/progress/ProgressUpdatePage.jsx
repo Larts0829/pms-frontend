@@ -8,6 +8,8 @@ import { Card, CardHeader, CardBody } from '../../components/common/Card'
 import { ProgressBar } from '../../components/common/Progress'
 import Button from '../../components/common/Button'
 import { FormInput, FormSelect, FormTextarea } from '../../components/forms/FormFields'
+import { useAuth } from '../../hooks/useAuth'
+import { usePermissions } from '../../hooks/usePermissions'
 
 // Form validation schema
 const progressSchema = z.object({
@@ -60,10 +62,22 @@ const weatherOptions = [
 function ProgressUpdatePage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { user } = useAuth()
+  const { hasRole, ROLES } = usePermissions()
+
+  const isAdminOrOps = hasRole([ROLES.ADMIN, ROLES.OPERATIONS_STAFF])
+  const isProjectEngineer = hasRole(ROLES.PROJECT_ENGINEER)
+
+  const assignedProjectIds = user?.assignedProjectIds || []
+  const allowedProjects = isAdminOrOps
+    ? mockProjects
+    : mockProjects.filter((p) => assignedProjectIds.includes(p.value))
+
   const preselectedProject = searchParams.get('project')
-  
+  const defaultSelectedProject = preselectedProject || (isProjectEngineer ? allowedProjects[0]?.value : '')
+
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [selectedProject, setSelectedProject] = useState(preselectedProject || '')
+  const [selectedProject, setSelectedProject] = useState(defaultSelectedProject)
   const [photos, setPhotos] = useState([])
   const [previousProgress, setPreviousProgress] = useState(0)
 
@@ -171,12 +185,14 @@ function ProgressUpdatePage() {
               <CardBody className="space-y-4">
                 <FormSelect
                   label="Project"
-                  options={mockProjects.map(p => ({ value: p.value, label: p.label }))}
+                  options={allowedProjects.map(p => ({ value: p.value, label: p.label }))}
                   placeholder="Select a project"
                   value={selectedProject}
                   onChange={handleProjectChange}
                   error={errors.projectId?.message}
                   required
+                  disabled={isProjectEngineer}
+                  helperText={isProjectEngineer ? 'Project engineers can only log progress for their assigned project.' : ''}
                 />
                 <FormSelect
                   label="Phase"
