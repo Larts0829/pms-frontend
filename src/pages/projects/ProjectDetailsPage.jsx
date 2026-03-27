@@ -282,31 +282,31 @@ function ProjectDetailsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-dark-500">Start Date</p>
-                    <p className="text-dark-200">{formatDate(mockProject.startDate)}</p>
+                    <p className="text-dark-900">{formatDate(mockProject.startDate)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-dark-500">Target End Date</p>
-                    <p className="text-dark-200">{formatDate(mockProject.endDate)}</p>
+                    <p className="text-dark-900">{formatDate(mockProject.endDate)}</p>
                   </div>
                   {isFinancialRole && (
                     <>
                       <div>
                         <p className="text-sm text-dark-500">Total Budget</p>
-                        <p className="text-dark-200">{formatCurrency(mockProject.budget)}</p>
+                        <p className="text-dark-900">{formatCurrency(mockProject.budget)}</p>
                       </div>
                       <div>
                         <p className="text-sm text-dark-500">Amount Spent</p>
-                        <p className="text-dark-200">{formatCurrency(mockProject.spent)}</p>
+                        <p className="text-dark-900">{formatCurrency(mockProject.spent)}</p>
                       </div>
                     </>
                   )}
                   <div>
                     <p className="text-sm text-dark-500">Building Floors</p>
-                    <p className="text-dark-200">{mockProject.floors}</p>
+                    <p className="text-dark-900">{mockProject.floors}</p>
                   </div>
                   <div>
                     <p className="text-sm text-dark-500">Total Area</p>
-                    <p className="text-dark-200">{mockProject.totalArea.toLocaleString()} sqm</p>
+                    <p className="text-dark-900">{mockProject.totalArea.toLocaleString()} sqm</p>
                   </div>
                 </div>
               </CardBody>
@@ -319,7 +319,7 @@ function ProjectDetailsPage() {
                 <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-dark-400 mt-0.5" />
                   <div>
-                    <p className="text-dark-200">{mockProject.address}</p>
+                    <p className="text-dark-900">{mockProject.address}</p>
                     <p className="text-sm text-dark-500 mt-1">{mockProject.location}</p>
                   </div>
                 </div>
@@ -378,7 +378,7 @@ function ProjectDetailsPage() {
                     <div className="flex items-center gap-3">
                       <FileText className="h-4 w-4 text-dark-400" />
                       <div>
-                        <p className="text-sm text-dark-200">{doc.name}</p>
+                        <p className="text-sm text-dark-900">{doc.name}</p>
                         <p className="text-xs text-dark-500">{doc.size}</p>
                       </div>
                     </div>
