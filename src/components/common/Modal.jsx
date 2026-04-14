@@ -55,14 +55,14 @@ function Modal({
             >
               <Dialog.Panel
                 className={cn(
-                  'w-full bg-dark-900 border border-dark-700 rounded-2xl shadow-2xl overflow-hidden',
+                  'w-full bg-white border border-dark-200 rounded-2xl shadow-2xl overflow-hidden text-dark-900',
                   sizes[size],
                   className
                 )}
               >
                 {/* Header */}
                 {(title || showCloseButton) && (
-                  <div className="px-6 py-4 border-b border-dark-700 flex items-center justify-between">
+                  <div className="px-6 py-4 bg-yellow-500 flex items-center justify-between">
                     <div>
                       {title && (
                         <Dialog.Title className="text-lg font-semibold text-white">
@@ -70,7 +70,7 @@ function Modal({
                         </Dialog.Title>
                       )}
                       {description && (
-                        <Dialog.Description className="text-sm text-dark-400 mt-1">
+                        <Dialog.Description className="text-sm text-yellow-100 mt-1">
                           {description}
                         </Dialog.Description>
                       )}
@@ -78,7 +78,8 @@ function Modal({
                     {showCloseButton && (
                       <button
                         onClick={onClose}
-                        className="p-2 text-dark-400 hover:text-white hover:bg-dark-800 rounded-lg transition-colors"
+                        className="p-2 text-yellow-100 hover:text-white hover:bg-yellow-600 rounded-lg transition-colors"
+                        aria-label="Close modal"
                       >
                         <X className="h-5 w-5" />
                       </button>

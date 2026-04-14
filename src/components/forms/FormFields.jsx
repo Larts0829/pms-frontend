@@ -42,6 +42,7 @@ const FormInput = forwardRef(
               rightIcon && 'pr-10',
               inputClassName
             )}
+            style={{ color: '#18181b', ...props.style }} // text-dark-900 fallback
             {...props}
           />
           {rightIcon && (

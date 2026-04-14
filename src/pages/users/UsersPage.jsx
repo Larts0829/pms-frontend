@@ -368,14 +368,7 @@ function UsersPage() {
         <p className="text-sm text-dark-400">
           Showing {filteredUsers.length} of {mockUsers.length} users
         </p>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled>
-            Previous
-          </Button>
-          <Button variant="outline" size="sm" disabled>
-            Next
-          </Button>
-        </div>
+        {/* Pagination controls removed for cleaner UI */}
       </div>
 
       {/* Create User Modal */}

@@ -86,6 +86,28 @@ function Sidebar({ isOpen, isMobileOpen, onMobileClose }) {
                 const isExpanded = expandedItems[item.label]
                 const isActive = isPathActive(item.path) || hasActiveChild(item.children)
 
+                // If item has only one child, render as direct link
+                if (hasChildren && item.children.length === 1) {
+                  const child = item.children[0]
+                  return (
+                    <NavLink
+                      key={item.label}
+                      to={child.path}
+                      className={({ isActive }) =>
+                        cn(
+                          'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                          isActive
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'text-dark-600 hover:text-dark-900 hover:bg-dark-100'
+                        )
+                      }
+                    >
+                      <Icon className="h-5 w-5 flex-shrink-0" />
+                      {isOpen && <span>{item.label}</span>}
+                    </NavLink>
+                  )
+                }
+
                 return (
                   <div key={item.label}>
                     {hasChildren ? (

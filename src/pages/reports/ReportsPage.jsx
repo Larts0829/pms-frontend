@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { 
   FileText, 
   Download, 
@@ -13,8 +14,10 @@ import {
 } from 'lucide-react'
 import { Card, CardBody, CardHeader } from '../../components/common/Card'
 import Button from '../../components/common/Button'
+import ScheduleReportModal from './ScheduleReportModal'
 import { FormInput, FormSelect } from '../../components/forms/FormFields'
 import { usePermissions } from '../../hooks/usePermissions'
+import { useAuth } from '../../hooks/useAuth'
 
 // Mock report templates
 const reportTemplates = [
@@ -118,6 +121,8 @@ const categoryColors = {
  * Reports Page Component
  */
 function ReportsPage() {
+  const { user } = useAuth();
+  const [showScheduleModal, setShowScheduleModal] = useState(false)
   const { hasRole, ROLES } = usePermissions()
   const [selectedReport, setSelectedReport] = useState(null)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -130,7 +135,8 @@ function ReportsPage() {
 
   const isFinancialRole = hasRole([ROLES.ADMIN, ROLES.OPERATIONS_STAFF])
   const isClientViewer = hasRole(ROLES.VIEWER)
-  const canGenerateReports = !isClientViewer
+  // Allow Operations Staff to generate reports, just like Engineer and Admin
+  const canGenerateReports = !isClientViewer || hasRole(ROLES.OPERATIONS_STAFF)
 
   const visibleTemplates = reportTemplates.filter((template) => {
     if (!isFinancialRole && template.category === 'financial') return false
@@ -142,7 +148,17 @@ function ReportsPage() {
     return true
   })
 
-  const scopedProjectOptions = isClientViewer ? [projectOptions[1]] : projectOptions
+
+  // Engineer: only see their assigned project
+  let scopedProjectOptions = projectOptions;
+  let engineerProject = null;
+  const isEngineer = hasRole(ROLES.PROJECT_ENGINEER);
+  if (isEngineer && user?.assignedProjectIds && user.assignedProjectIds.length === 1) {
+    engineerProject = projectOptions.find(opt => opt.value === user.assignedProjectIds[0]);
+    scopedProjectOptions = engineerProject ? [engineerProject] : [];
+  } else if (isClientViewer) {
+    scopedProjectOptions = [projectOptions[1]];
+  }
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -170,11 +186,14 @@ function ReportsPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-dark-900">Reports</h1>
-        <p className="text-dark-600 mt-1">
-          Fit-out reporting for progress, site deliverables, and client visibility
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-dark-900">Reports</h1>
+          <p className="text-dark-600 mt-1">
+            Fit-out reporting for progress, site deliverables, and client visibility
+          </p>
+        </div>
+        {/* Upload Document button removed as requested */}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -286,12 +305,22 @@ function ReportsPage() {
                     <p className="text-dark-900">{selectedReport.name}</p>
                   </div>
 
-                  <FormSelect
-                    label="Project"
-                    options={scopedProjectOptions}
-                    value={filters.project}
-                    onChange={(e) => setFilters({ ...filters, project: e.target.value })}
-                  />
+                  {/* Engineer sees only their project as plain text, no dropdown */}
+                  {isEngineer && engineerProject ? (
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-dark-700 mb-1">Project</label>
+                      <div className="px-3 py-2 bg-dark-50 border border-dark-200 rounded-lg text-dark-900">
+                        {engineerProject.label}
+                      </div>
+                    </div>
+                  ) : (
+                    <FormSelect
+                      label="Project"
+                      options={scopedProjectOptions}
+                      value={filters.project}
+                      onChange={(e) => setFilters({ ...filters, project: e.target.value })}
+                    />
+                  )}
 
                   <div className="grid grid-cols-2 gap-4">
                     <FormInput
@@ -374,9 +403,10 @@ function ReportsPage() {
               <p className="text-sm text-dark-600 mb-4">
                 Automate report generation on a daily, weekly, or monthly basis.
               </p>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button variant="outline" size="sm" className="w-full" onClick={() => setShowScheduleModal(true)}>
                 Set Up Schedule
               </Button>
+              {showScheduleModal && <ScheduleReportModal onClose={() => setShowScheduleModal(false)} />}
             </CardBody>
           </Card>
         </div>

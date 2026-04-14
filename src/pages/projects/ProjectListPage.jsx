@@ -21,7 +21,7 @@ import { formatDate, formatCurrency } from '../../utils/formatters'
 import { PROJECT_STATUS, PROJECT_STATUS_LABELS } from '../../utils/constants'
 
 // Mock data
-const mockProjects = [
+export const mockProjects = [
   {
     id: 'prj_001',
     name: 'Westwood Tower Phase 1',
@@ -198,9 +198,7 @@ function ProjectListPage() {
                 placeholder="All Status"
               />
             </div>
-            <Button variant="outline" leftIcon={<Filter className="h-4 w-4" />}>
-              More Filters
-            </Button>
+            {/* More Filters button removed for clean UI */}
           </div>
         </CardBody>
       </Card>
@@ -343,14 +341,7 @@ function ProjectListPage() {
         <p className="text-sm text-dark-600">
           Showing {filteredProjects.length} of {roleScopedProjects.length} projects
         </p>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled>
-            Previous
-          </Button>
-          <Button variant="outline" size="sm" disabled>
-            Next
-          </Button>
-        </div>
+        {/* Pagination controls removed for cleaner UI */}
       </div>
     </div>
   )

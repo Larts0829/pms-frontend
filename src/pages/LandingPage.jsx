@@ -136,7 +136,7 @@ function LandingPage() {
             </div>
             <h1 className="text-6xl font-extrabold text-dark-900 mb-6 leading-tight tracking-tight" style={{letterSpacing: '-0.03em'}}>WORKS</h1>
             <p className="text-2xl text-dark-700 mb-10 max-w-xl font-medium">
-              The modern platform for managing, tracking, and delivering construction projects—connecting engineering, operations, and clients in one place.
+              The modern platform for managing, tracking, and delivering construction projects connecting engineering, operations, and clients in one place.
             </p>
             <a href="#portfolio" className="inline-flex items-center justify-center px-10 py-4 bg-yellow-500 text-white rounded-xl font-bold text-lg shadow-lg hover:bg-yellow-600 transition-all duration-200 focus:ring-4 focus:ring-yellow-200 scroll-smooth">
               View Projects <ArrowRight className="ml-3 h-6 w-6" />

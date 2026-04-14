@@ -160,56 +160,33 @@ function ProgressListPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-green-500/10 border-green-500/20">
-          <CardBody className="py-4">
-            <div className="flex items-center gap-3">
-              <TrendingUp className="h-5 w-5 text-green-400" />
-              <div>
-                <p className="text-sm text-green-300">On Track</p>
-                <p className="text-xl font-bold text-dark-900">
-                  {accessibleEntries.filter(e => e.status === 'on_track').length}
-                </p>
-              </div>
-            </div>
+        {/* Redesigned summary cards: white bg, drop shadow, clear content */}
+        <Card className="bg-white shadow-md border border-dark-100">
+          <CardBody className="py-4 flex flex-col items-center">
+            <TrendingUp className="h-6 w-6 text-green-500 mb-2" />
+            <p className="text-base font-semibold text-dark-900 mb-1">On Track</p>
+            <p className="text-2xl font-bold text-dark-900">{accessibleEntries.filter(e => e.status === 'on_track').length}</p>
           </CardBody>
         </Card>
-        <Card className="bg-yellow-500/10 border-yellow-500/20">
-          <CardBody className="py-4">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-yellow-400" />
-              <div>
-                <p className="text-sm text-yellow-300">Delayed</p>
-                <p className="text-xl font-bold text-dark-900">
-                  {accessibleEntries.filter(e => e.status === 'delayed').length}
-                </p>
-              </div>
-            </div>
+        <Card className="bg-white shadow-md border border-dark-100">
+          <CardBody className="py-4 flex flex-col items-center">
+            <AlertTriangle className="h-6 w-6 text-yellow-500 mb-2" />
+            <p className="text-base font-semibold text-dark-900 mb-1">Delayed</p>
+            <p className="text-2xl font-bold text-dark-900">{accessibleEntries.filter(e => e.status === 'delayed').length}</p>
           </CardBody>
         </Card>
-        <Card className="bg-orange-500/10 border-orange-500/20">
-          <CardBody className="py-4">
-            <div className="flex items-center gap-3">
-              <Clock className="h-5 w-5 text-orange-400" />
-              <div>
-                <p className="text-sm text-orange-300">On Hold</p>
-                <p className="text-xl font-bold text-dark-900">
-                  {accessibleEntries.filter(e => e.status === 'on_hold').length}
-                </p>
-              </div>
-            </div>
+        <Card className="bg-white shadow-md border border-dark-100">
+          <CardBody className="py-4 flex flex-col items-center">
+            <Clock className="h-6 w-6 text-orange-500 mb-2" />
+            <p className="text-base font-semibold text-dark-900 mb-1">On Hold</p>
+            <p className="text-2xl font-bold text-dark-900">{accessibleEntries.filter(e => e.status === 'on_hold').length}</p>
           </CardBody>
         </Card>
-        <Card className="bg-blue-500/10 border-blue-500/20">
-          <CardBody className="py-4">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-blue-400" />
-              <div>
-                <p className="text-sm text-blue-300">Completed</p>
-                <p className="text-xl font-bold text-dark-900">
-                  {accessibleEntries.filter(e => e.status === 'completed').length}
-                </p>
-              </div>
-            </div>
+        <Card className="bg-white shadow-md border border-dark-100">
+          <CardBody className="py-4 flex flex-col items-center">
+            <CheckCircle className="h-6 w-6 text-blue-500 mb-2" />
+            <p className="text-base font-semibold text-dark-900 mb-1">Completed</p>
+            <p className="text-2xl font-bold text-dark-900">{accessibleEntries.filter(e => e.status === 'completed').length}</p>
           </CardBody>
         </Card>
       </div>
@@ -234,9 +211,7 @@ function ProgressListPage() {
                 placeholder="All Status"
               />
             </div>
-            <Button variant="outline" leftIcon={<Filter className="h-4 w-4" />}>
-              More Filters
-            </Button>
+            {/* More Filters button removed for clean UI */}
           </div>
         </CardBody>
       </Card>
@@ -331,14 +306,7 @@ function ProgressListPage() {
         <p className="text-sm text-dark-600">
           Showing {filteredEntries.length} of {accessibleEntries.length} entries
         </p>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled>
-            Previous
-          </Button>
-          <Button variant="outline" size="sm" disabled>
-            Next
-          </Button>
-        </div>
+        {/* Pagination controls removed for cleaner UI */}
       </div>
     </div>
   )

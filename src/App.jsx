@@ -1,3 +1,5 @@
+import ReportTemplateEditor from './pages/reports/ReportTemplateEditor'
+          <Route path="/reports/templates" element={<ReportTemplateEditor />} />
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 
@@ -17,11 +19,16 @@ import InquiryPage from './pages/InquiryPage'
 
 // Dashboard
 import DashboardPage from './pages/dashboard/DashboardPage'
+// import UploadReportPage from './pages/reports/UploadReportPage'
+// import UploadDocumentPage from './pages/documents/UploadDocumentPage'
 
 // Projects
 import ProjectListPage from './pages/projects/ProjectListPage'
 import ProjectDetailsPage from './pages/projects/ProjectDetailsPage'
 import ProjectFormPage from './pages/projects/ProjectFormPage'
+import MaterialTrackingPage from './pages/documents/MaterialTrackingPage'
+import BudgetPage from './pages/projects/BudgetPage'
+import BudgetTrackingPage from './pages/projects/BudgetTrackingPage'
 
 // Progress
 import ProgressListPage from './pages/progress/ProgressListPage'
@@ -35,12 +42,14 @@ import DocumentsListPage from './pages/documents/DocumentsListPage'
 
 // Clients
 import ClientsListPage from './pages/clients/ClientsListPage'
+import AddClientPage from './pages/clients/AddClientPage'
 
 // Reports
 import ReportsPage from './pages/reports/ReportsPage'
 
 // Users (Admin)
 import UsersPage from './pages/users/UsersPage'
+import ProfilePage from './pages/users/ProfilePage'
 
 // Settings (Admin)
 import SettingsPage from './pages/settings/SettingsPage'
@@ -79,13 +88,20 @@ function App() {
         <Route element={<DashboardLayout />}>
           {/* Dashboard - All Roles */}
           <Route path="/dashboard" element={<DashboardPage />} />
+          {/* <Route path="/reports/upload" element={<UploadReportPage />} /> */}
+          {/* <Route path="/documents/upload" element={<UploadDocumentPage />} /> */}
 
           {/* Projects - All Roles Can View */}
           <Route path="/projects" element={<ProjectListPage />} />
           <Route path="/projects/:id" element={<ProjectDetailsPage />} />
-          
-          {/* Projects - Create/Edit (Admin, Operations Staff) */}
+
+
+          {/* Budget Page - All roles (for demo) */}
+          <Route path="/projects/budget" element={<BudgetPage />} />
+
+          {/* Project Budget Tracking - Admin, Operations Staff only */}
           <Route element={<RoleGuard allowedRoles={[ROLES.ADMIN, ROLES.OPERATIONS_STAFF]} />}>
+            <Route path="/projects/budget-tracking" element={<BudgetTrackingPage />} />
             <Route path="/projects/create" element={<ProjectFormPage />} />
             <Route path="/projects/:id/edit" element={<ProjectFormPage />} />
           </Route>
@@ -106,12 +122,14 @@ function App() {
             <Route path="/site-reports/create" element={<SiteReportsListPage />} />
           </Route>
 
+
           {/* Documents - All Roles Can View */}
           <Route path="/documents" element={<DocumentsListPage />} />
-
-          {/* Clients - Admin, Operations Staff */}
+          {/* Material Tracking - Admin, Operations Staff only */}
           <Route element={<RoleGuard allowedRoles={[ROLES.ADMIN, ROLES.OPERATIONS_STAFF]} />}>
+            <Route path="/documents/material-tracking" element={<MaterialTrackingPage />} />
             <Route path="/clients" element={<ClientsListPage />} />
+            <Route path="/clients/create" element={<AddClientPage />} />
           </Route>
 
           {/* Reports - Admin, Operations Staff, Project Engineer, Viewer */}
@@ -128,6 +146,9 @@ function App() {
           <Route element={<RoleGuard allowedRoles={[ROLES.ADMIN]} />}>
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
+
+          {/* My Profile - All Roles */}
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>
 

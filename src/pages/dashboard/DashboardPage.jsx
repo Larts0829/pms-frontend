@@ -14,23 +14,93 @@ import { useAuth } from '../../hooks/useAuth'
 import { usePermissions } from '../../hooks/usePermissions'
 import { Card, CardHeader, CardTitle, CardBody } from '../../components/common/Card'
 import { KPICard } from '../../components/common/KPICard'
+import { ProjectStatusBar, PortfolioPie, ProgressLine } from '../../components/charts/DashboardCharts'
 import { ProgressBar } from '../../components/common/Progress'
 import { StatusBadge } from '../../components/common/Badge'
+import { useEffect, useRef, useState } from 'react'
+// Slideshow images (client-specific, local images)
+const progressImages = [
+  '/src/images/portfolio-images/client-images/Interior cafe design.jpg',
+  '/src/images/portfolio-images/client-images/download.jpg',
+  '/src/images/portfolio-images/client-images/download (1).jpg',
+  '/src/images/portfolio-images/client-images/download (2).jpg',
+  '/src/images/portfolio-images/client-images/House.jpg',
+  '/src/images/portfolio-images/client-images/terrace deck decor idea lighting plants boho trendy classy.jpg',
+  '/src/images/portfolio-images/client-images/Doheny Estates - Modern - Bedroom - Los Angeles - by Foundation Landscape Design _ Houzz.jpg',
+]
+
+function ProgressSlideshow() {
+  const [current, setCurrent] = useState(0)
+  const timeoutRef = useRef(null)
+
+  // Arrow key navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowLeft') {
+        setCurrent((prev) => (prev - 1 + progressImages.length) % progressImages.length)
+      } else if (e.key === 'ArrowRight') {
+        setCurrent((prev) => (prev + 1) % progressImages.length)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  // Auto-advance
+  useEffect(() => {
+    timeoutRef.current = setTimeout(() => {
+      setCurrent((prev) => (prev + 1) % progressImages.length)
+    }, 3500)
+    return () => clearTimeout(timeoutRef.current)
+  }, [current])
+
+  // Manual navigation buttons
+  const goToPrev = () => setCurrent((prev) => (prev - 1 + progressImages.length) % progressImages.length)
+  const goToNext = () => setCurrent((prev) => (prev + 1) % progressImages.length)
+
+  return (
+    <div className="w-full max-w-3xl mx-auto rounded-2xl overflow-hidden shadow-lg bg-white animate-fade-in relative">
+      <img
+        src={progressImages[current]}
+        alt={`Site Progress ${current + 1}`}
+        className="w-full h-72 object-cover object-center transition-all duration-700"
+        draggable={false}
+      />
+      {/* Left Arrow */}
+      <button
+        onClick={goToPrev}
+        aria-label="Previous slide"
+        className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-yellow-100 rounded-full p-2 shadow transition-all"
+        style={{ zIndex: 2 }}
+      >
+        <svg className="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+      </button>
+      {/* Right Arrow */}
+      <button
+        onClick={goToNext}
+        aria-label="Next slide"
+        className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-yellow-100 rounded-full p-2 shadow transition-all"
+        style={{ zIndex: 2 }}
+      >
+        <svg className="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+      </button>
+      {/* Dots */}
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+        {progressImages.map((_, idx) => (
+          <span
+            key={idx}
+            className={`h-2 w-2 rounded-full ${idx === current ? 'bg-yellow-500' : 'bg-dark-200'} transition-all`}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
 import Button from '../../components/common/Button'
 import { formatDate, formatCurrency } from '../../utils/formatters'
 
-// Mock data for demonstration
-const mockStats = {
-  totalProjects: 47,
-  activeProjects: 23,
-  completedProjects: 18,
-  onHoldProjects: 6,
-  totalProgress: 72,
-  documentsUploaded: 1234,
-  activeUsers: 45,
-}
-
-const mockRecentProjects = [
+// --- DEMO DATA LOGIC: Filtered per user role/assignment ---
+const allProjects = [
   {
     id: 'prj_001',
     name: 'Westwood Tower Phase 1',
@@ -73,12 +143,14 @@ const mockRecentProjects = [
   },
 ]
 
-const mockRecentActivity = [
+// Demo activities, filtered by project assignment for demo
+const allActivities = [
   {
     id: 1,
     type: 'progress_update',
     message: 'Progress updated to 75% for Westwood Tower Phase 1',
     user: 'John Doe',
+    projectId: 'prj_001',
     time: '10 minutes ago',
   },
   {
@@ -86,6 +158,7 @@ const mockRecentActivity = [
     type: 'document_upload',
     message: 'Engineering plans uploaded for Metro Square Commercial',
     user: 'Jane Smith',
+    projectId: 'prj_002',
     time: '1 hour ago',
   },
   {
@@ -93,6 +166,7 @@ const mockRecentActivity = [
     type: 'milestone_complete',
     message: 'Foundation work milestone completed',
     user: 'Mike Johnson',
+    projectId: 'prj_003',
     time: '2 hours ago',
   },
   {
@@ -100,9 +174,43 @@ const mockRecentActivity = [
     type: 'new_project',
     message: 'New project created: Greenfield Residences',
     user: 'Admin',
+    projectId: 'prj_003',
     time: '5 hours ago',
   },
 ]
+
+// Helper to get assigned projects for demo
+function getAssignedProjects(user) {
+  if (!user) return []
+  if (user.role === 'admin' || user.role === 'operations_staff') return allProjects
+  if (user.assignedProjectIds) {
+    return allProjects.filter(p => user.assignedProjectIds.includes(p.id))
+  }
+  return []
+}
+
+function getStats(projects) {
+  // Calculate stats based on visible projects
+  const totalProjects = projects.length
+  const activeProjects = projects.filter(p => p.status === 'in_progress').length
+  const completedProjects = projects.filter(p => p.status === 'completed').length
+  const onHoldProjects = projects.filter(p => p.status === 'on_hold').length
+  const planningProjects = projects.filter(p => p.status === 'planning').length
+  const totalProgress = totalProjects
+    ? Math.round(projects.reduce((sum, p) => sum + (p.progress || 0), 0) / totalProjects)
+    : 0
+  // Demo: documents and users are static for now
+  return {
+    totalProjects,
+    activeProjects,
+    completedProjects,
+    onHoldProjects,
+    planningProjects,
+    totalProgress,
+    documentsUploaded: 1234,
+    activeUsers: 45,
+  }
+}
 
 /**
  * Dashboard Page Component
@@ -138,160 +246,195 @@ function DashboardPage() {
     actions: ['Review Projects', 'Monitor Progress', 'Coordinate Updates'],
   }
 
-  const assignedProjectIds = user?.assignedProjectIds?.length
-    ? user.assignedProjectIds
-    : ['prj_001']
-  const visibleRecentProjects = isClientViewer
-    ? mockRecentProjects.filter((project) => assignedProjectIds.includes(project.id))
-    : mockRecentProjects
+
+  // --- DEMO: Filter projects and activities based on user role/assignment ---
+  const visibleProjects = getAssignedProjects(user)
+  const visibleRecentProjects = visibleProjects.slice(0, 4)
+  const visibleActivities = allActivities.filter(a => visibleProjects.some(p => p.id === a.projectId))
+  const mockStats = getStats(visibleProjects)
+
+  // Prepare progress analytics and schedule
+  const statusList = [
+    { label: 'In Progress', value: mockStats.activeProjects, color: 'bg-yellow-400' },
+    { label: 'Completed', value: mockStats.completedProjects, color: 'bg-green-400' },
+    { label: 'Planning', value: mockStats.planningProjects, color: 'bg-blue-300' },
+    { label: 'On Hold', value: mockStats.onHoldProjects, color: 'bg-gray-300' },
+  ];
+  const schedule = visibleProjects
+    .map((p) => ({
+      name: p.name,
+      deadline: p.endDate,
+      status: p.status,
+      progress: p.progress,
+    }))
+    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
   return (
-    <div className="space-y-8 reveal-up">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 reveal-up reveal-delay-1">
-        <div>
-          <h1 className="text-2xl font-bold text-dark-900">
-            Welcome back, {user?.firstName}!
-          </h1>
-          <p className="text-dark-600 mt-1">
-            {currentRoleConfig.title}
-          </p>
+    <div className="space-y-10">
+      {/* Hero Section */}
+      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-yellow-100 via-white to-yellow-50 shadow-lg mb-6 p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 animate-fade-in">
+        <div className="flex items-center gap-4">
+          <FolderKanban className="h-14 w-14 text-yellow-500 drop-shadow-lg" />
+          <div>
+            <h1 className="text-3xl font-extrabold text-dark-900 tracking-tight mb-1">Welcome back, {user?.firstName}!</h1>
+            <p className="text-lg text-dark-600 font-medium">{currentRoleConfig.title}</p>
+          </div>
         </div>
-        {canCreate(MODULES.PROJECTS) && (
+        {canCreate(MODULES.PROJECTS) && !isClientViewer && (
           <Link to="/projects/create">
-            <Button leftIcon={<FolderKanban className="h-4 w-4" />}>
+            <Button leftIcon={<FolderKanban className="h-5 w-5" />} size="lg" className="shadow-md">
               New Project
             </Button>
           </Link>
         )}
       </div>
 
-      <Card className="reveal-up reveal-delay-1">
-        <CardBody>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      {/* Slideshow for client (viewer) role */}
+      {isClientViewer ? (
+        <div className="mb-8">
+          <ProgressSlideshow />
+        </div>
+      ) : (
+        <>
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
             {currentRoleConfig.actions.map((action) => (
-              <div key={action} className="rounded-lg border border-dark-200 bg-dark-50 px-4 py-3 text-sm font-medium text-dark-700">
+              <div key={action} className="rounded-xl border border-dark-100 bg-white px-6 py-5 text-base font-semibold text-dark-800 shadow-sm hover:shadow-md transition-all flex items-center gap-3 animate-fade-in">
+                <CheckCircle className="h-5 w-5 text-yellow-500" />
                 {action}
               </div>
             ))}
           </div>
-        </CardBody>
-      </Card>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 reveal-up reveal-delay-1">
-        <KPICard
-          title="Total Projects"
-          value={mockStats.totalProjects}
-          icon={FolderKanban}
-          trend="up"
-          trendValue="+12%"
-          description="8 new projects this month"
-        />
-        <KPICard
-          title="Active Projects"
-          value={mockStats.activeProjects}
-          icon={Activity}
-          variant="warning"
-          trend="up"
-          trendValue="+5%"
-        />
-        <KPICard
-          title="Documents"
-          value={mockStats.documentsUploaded.toLocaleString()}
-          icon={FileText}
-          variant="info"
-          trend="up"
-          trendValue="+23"
-          description="This week"
-        />
-        <KPICard
-          title="Team Members"
-          value={mockStats.activeUsers}
-          icon={Users}
-          variant="success"
-        />
-      </div>
+          {/* KPI Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <KPICard
+              title="Total Projects"
+              value={mockStats.totalProjects}
+              icon={FolderKanban}
+              trend="up"
+              trendValue={mockStats.totalProjects > 0 ? '+12%' : '0%'}
+              description={mockStats.totalProjects > 0 ? '8 new projects this month' : 'No projects assigned'}
+            />
+            <KPICard
+              title="Active Projects"
+              value={mockStats.activeProjects}
+              icon={Activity}
+              variant="warning"
+              trend="up"
+              trendValue={mockStats.activeProjects > 0 ? '+5%' : '0%'}
+            />
+            <KPICard
+              title="Documents"
+              value={mockStats.documentsUploaded.toLocaleString()}
+              icon={FileText}
+              variant="info"
+              trend="up"
+              trendValue={mockStats.documentsUploaded > 0 ? '+23' : '0'}
+              description="This week"
+            />
+            <KPICard
+              title="Team Members"
+              value={mockStats.activeUsers}
+              icon={Users}
+              variant="success"
+            />
+          </div>
 
-      {/* Charts and Stats Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 reveal-up reveal-delay-2">
-        {/* Project Status Overview */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Project Status Overview</CardTitle>
-              <Link to="/projects" className="text-sm text-yellow-500 hover:text-yellow-400 flex items-center gap-1">
-                View All <ArrowUpRight className="h-3 w-3" />
-              </Link>
-            </div>
-          </CardHeader>
-          <CardBody>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="text-center p-4 bg-dark-50 rounded-xl border border-dark-200">
-                <div className="h-10 w-10 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-2">
-                  <Clock className="h-5 w-5 text-warning" />
+          {/* Analytics & Schedule Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Project Status Progress Bars */}
+            <Card className="lg:col-span-2 shadow-md animate-fade-in">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Project Status Analytics</CardTitle>
+                  <Link to="/projects" className="text-sm text-yellow-500 hover:text-yellow-400 flex items-center gap-1">
+                    View All <ArrowUpRight className="h-3 w-3" />
+                  </Link>
                 </div>
-                <p className="text-2xl font-bold text-dark-900">{mockStats.activeProjects}</p>
-                <p className="text-xs text-dark-600">In Progress</p>
-              </div>
-              <div className="text-center p-4 bg-dark-50 rounded-xl border border-dark-200">
-                <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-2">
-                  <CheckCircle className="h-5 w-5 text-success" />
+              </CardHeader>
+              <CardBody>
+                <div className="space-y-5">
+                  {statusList.map((s) => (
+                    <div key={s.label} className="mb-2">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm font-medium text-dark-700">{s.label}</span>
+                        <span className="text-sm font-semibold text-dark-900">{s.value}</span>
+                      </div>
+                      <div className="w-full bg-dark-100 rounded-full h-3">
+                        <div
+                          className={`${s.color} h-3 rounded-full transition-all`}
+                          style={{ width: `${Math.max(5, Math.min(100, (s.value / (mockStats.totalProjects || 1)) * 100))}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-2xl font-bold text-dark-900">{mockStats.completedProjects}</p>
-                <p className="text-xs text-dark-600">Completed</p>
-              </div>
-              <div className="text-center p-4 bg-dark-50 rounded-xl border border-dark-200">
-                <div className="h-10 w-10 rounded-full bg-info/10 flex items-center justify-center mx-auto mb-2">
-                  <FolderKanban className="h-5 w-5 text-info" />
+              </CardBody>
+            </Card>
+            {/* Project Schedule Timeline */}
+            <Card className="shadow-md animate-fade-in">
+              <CardHeader>
+                <CardTitle>Upcoming Project Deadlines</CardTitle>
+              </CardHeader>
+              <CardBody>
+                <ul className="divide-y divide-dark-100">
+                  {schedule.length === 0 ? (
+                    <li className="py-4 text-dark-400 text-sm">No projects scheduled.</li>
+                  ) : (
+                    schedule.map((item) => (
+                      <li key={item.name} className="py-4 flex flex-col gap-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-dark-900">{item.name}</span>
+                          <span className="text-xs text-dark-500">{formatDate(item.deadline)}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-dark-100 text-dark-700 capitalize">{item.status.replace('_', ' ')}</span>
+                          <span className="text-xs text-dark-500">Progress:</span>
+                          <span className="text-xs font-semibold text-yellow-600">{item.progress}%</span>
+                        </div>
+                        <div className="w-full bg-dark-100 rounded-full h-2 mt-1">
+                          <div
+                            className="bg-yellow-400 h-2 rounded-full transition-all"
+                            style={{ width: `${item.progress}%` }}
+                          />
+                        </div>
+                      </li>
+                    ))
+                  )}
+                </ul>
+              </CardBody>
+            </Card>
+            {/* Recent Activity */}
+            <Card className="lg:col-span-3 shadow-md animate-fade-in">
+              <CardHeader>
+                <CardTitle>Recent Activity</CardTitle>
+              </CardHeader>
+              <CardBody className="p-0">
+                <div className="divide-y divide-dark-200">
+                  {visibleActivities.length === 0 ? (
+                    <div className="px-6 py-4 text-dark-400 text-sm">No recent activity for your projects.</div>
+                  ) : (
+                    visibleActivities.map((activity) => (
+                      <div key={activity.id} className="px-6 py-4 hover:bg-yellow-50 transition-all duration-300 animate-fade-in">
+                        <p className="text-sm text-dark-900 line-clamp-2">{activity.message}</p>
+                        <div className="flex items-center gap-2 mt-2 text-xs text-dark-600">
+                          <span>{activity.user}</span>
+                          <span>•</span>
+                          <span>{activity.time}</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
-                <p className="text-2xl font-bold text-dark-900">6</p>
-                <p className="text-xs text-dark-600">Planning</p>
-              </div>
-              <div className="text-center p-4 bg-dark-50 rounded-xl border border-dark-200">
-                <div className="h-10 w-10 rounded-full bg-dark-600 flex items-center justify-center mx-auto mb-2">
-                  <AlertCircle className="h-5 w-5 text-dark-400" />
-                </div>
-                <p className="text-2xl font-bold text-dark-900">{mockStats.onHoldProjects}</p>
-                <p className="text-xs text-dark-600">On Hold</p>
-              </div>
-            </div>
+              </CardBody>
+            </Card>
+          </div>
+        </>
+      )}
 
-            {/* Overall Progress */}
-            <div className="p-4 bg-dark-50 rounded-xl border border-dark-200">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-dark-900">Overall Portfolio Progress</span>
-                <span className="text-sm font-bold text-yellow-500">{mockStats.totalProgress}%</span>
-              </div>
-              <ProgressBar value={mockStats.totalProgress} variant="gold" size="lg" />
-            </div>
-          </CardBody>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardBody className="p-0">
-            <div className="divide-y divide-dark-200">
-              {mockRecentActivity.map((activity) => (
-                <div key={activity.id} className="px-6 py-4 hover:bg-dark-50 transition-colors">
-                  <p className="text-sm text-dark-900 line-clamp-2">{activity.message}</p>
-                  <div className="flex items-center gap-2 mt-2 text-xs text-dark-600">
-                    <span>{activity.user}</span>
-                    <span>•</span>
-                    <span>{activity.time}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardBody>
-        </Card>
-      </div>
-
-      {/* Recent Projects Table */}
-      <Card className="reveal-up reveal-delay-3">
+      {/* Recent Projects Table (still shown for all) */}
+      <Card className="shadow-md animate-fade-in">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Recent Projects</CardTitle>

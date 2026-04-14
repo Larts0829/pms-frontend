@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import clientService from '../../services/clientService'
 import { 
   Plus, 
   Search, 
@@ -117,6 +118,19 @@ function ClientsListPage() {
     }).format(value)
   }
 
+  // Delete/archive client handler
+  async function handleDelete(clientId) {
+    if (window.confirm('Are you sure you want to delete/archive this client?')) {
+      // Simulate API call
+      try {
+        await clientService.delete(clientId)
+        window.location.reload() // Or optimistically remove from state
+      } catch (err) {
+        alert('Failed to delete client.')
+      }
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -215,12 +229,14 @@ function ClientsListPage() {
                       </span>
                     </div>
                     <div>
-                      <Link 
-                        to={`/clients/${client.id}`}
-                        className="font-medium text-white hover:text-yellow-500"
+                      <span className="font-medium text-white hover:text-yellow-500 cursor-pointer"
+                        onClick={e => { e.stopPropagation(); navigate(`/clients/${client.id}`) }}
+                        tabIndex={0}
+                        role="button"
+                        onKeyDown={e => { if (e.key === 'Enter') { e.stopPropagation(); navigate(`/clients/${client.id}`) } }}
                       >
                         {client.name}
-                      </Link>
+                      </span>
                       <span className={`ml-2 px-2 py-0.5 rounded text-xs ${
                         client.status === 'active' 
                           ? 'bg-green-500/10 text-green-400' 
@@ -259,25 +275,29 @@ function ClientsListPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => navigate(`/clients/${client.id}`)}
+                      onClick={e => { e.stopPropagation(); console.log('View client', client.id); navigate(`/clients/${client.id}`) }}
                       className="p-2 text-dark-400 hover:text-white hover:bg-dark-700 rounded-lg"
                       title="View"
+                      type="button"
                     >
                       <Eye className="h-4 w-4" />
                     </button>
                     {canEdit(MODULES.CLIENTS) && (
                       <button
-                        onClick={() => navigate(`/clients/${client.id}/edit`)}
+                        onClick={e => { e.stopPropagation(); console.log('Edit client', client.id); navigate(`/clients/${client.id}/edit`) }}
                         className="p-2 text-dark-400 hover:text-yellow-500 hover:bg-dark-700 rounded-lg"
                         title="Edit"
+                        type="button"
                       >
                         <Edit className="h-4 w-4" />
                       </button>
                     )}
                     {canDelete(MODULES.CLIENTS) && (
                       <button
+                        onClick={e => { e.stopPropagation(); console.log('Delete client', client.id); handleDelete(client.id) }}
                         className="p-2 text-dark-400 hover:text-error hover:bg-dark-700 rounded-lg"
                         title="Delete"
+                        type="button"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>

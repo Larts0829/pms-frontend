@@ -20,6 +20,7 @@ import { Badge } from '../../components/common/Badge'
 import Button from '../../components/common/Button'
 import { FormInput, FormSelect } from '../../components/forms/FormFields'
 import { formatDate } from '../../utils/formatters'
+import CreateSiteReport from './CreateSiteReport'
 
 // Mock site reports data
 const mockSiteReports = [
@@ -109,6 +110,7 @@ const statusOptions = Object.entries(statusConfig).map(([value, { label }]) => (
  */
 function SiteReportsListPage() {
   const navigate = useNavigate()
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const { user } = useAuth()
   const { canCreate, canEdit, canDelete, hasRole, MODULES, ROLES } = usePermissions()
 
@@ -149,12 +151,13 @@ function SiteReportsListPage() {
           </p>
         </div>
         {canCreate(MODULES.SITE_REPORTS) && (
-          <Link to="/site-reports/create">
-            <Button leftIcon={<Plus className="h-4 w-4" />}>
-              New Report
-            </Button>
-          </Link>
+          <Button leftIcon={<Plus className="h-4 w-4" />} onClick={() => setShowCreateModal(true)}>
+            New Report
+          </Button>
         )}
+            {showCreateModal && (
+              <CreateSiteReport onClose={() => setShowCreateModal(false)} />
+            )}
       </div>
 
       {/* Summary Cards */}
@@ -206,9 +209,7 @@ function SiteReportsListPage() {
                 placeholder="All Status"
               />
             </div>
-            <Button variant="outline" leftIcon={<Filter className="h-4 w-4" />}>
-              More Filters
-            </Button>
+            {/* More Filters button removed for clean UI */}
           </div>
         </CardBody>
       </Card>
@@ -322,14 +323,7 @@ function SiteReportsListPage() {
         <p className="text-sm text-dark-600">
           Showing {filteredReports.length} of {accessibleReports.length} reports
         </p>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled>
-            Previous
-          </Button>
-          <Button variant="outline" size="sm" disabled>
-            Next
-          </Button>
-        </div>
+        {/* Pagination controls removed for cleaner UI */}
       </div>
     </div>
   )

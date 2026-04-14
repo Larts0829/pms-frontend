@@ -24,42 +24,42 @@ const createMenuItem = (label, path, icon, module = null, children = null) => ({
 // Full navigation structure
 export const FULL_MENU = [
   createMenuItem('Dashboard', '/dashboard', LayoutDashboard, MODULES.DASHBOARD),
-  
+
   createMenuItem('Projects', '/projects', FolderKanban, MODULES.PROJECTS, [
     { label: 'All Projects', path: '/projects' },
+    // Only show create for admin/ops
     { label: 'Create Project', path: '/projects/create', roles: [ROLES.ADMIN, ROLES.OPERATIONS_STAFF] },
   ]),
-  
+
   createMenuItem('Progress', '/progress', TrendingUp, MODULES.PROGRESS, [
     { label: 'Milestones', path: '/progress' },
+    // Only show update for admin/engineer
     { label: 'Update Progress', path: '/progress/update', roles: [ROLES.ADMIN, ROLES.PROJECT_ENGINEER] },
   ]),
-  
+
   createMenuItem('Site Reports', '/site-reports', ClipboardList, MODULES.SITE_REPORTS, [
-    { label: 'All Reports', path: '/site-reports' },
-    { label: 'Upload Report', path: '/site-reports/upload', roles: [ROLES.ADMIN, ROLES.PROJECT_ENGINEER] },
+    { label: 'All Reports', path: '/site-reports' }
+    // No upload for viewer
   ]),
-  
+
   createMenuItem('Documents', '/documents', FileText, MODULES.DOCUMENTS, [
     { label: 'Document Library', path: '/documents' },
-    { label: 'Upload Document', path: '/documents/upload', roles: [ROLES.ADMIN, ROLES.PROJECT_ENGINEER, ROLES.OPERATIONS_STAFF] },
-    { label: 'Material Tracking', path: '/documents', roles: [ROLES.ADMIN, ROLES.OPERATIONS_STAFF] },
+    // Only show upload for admin/engineer/ops
+    // { label: 'Upload Document', path: '/documents/upload', roles: [ROLES.ADMIN, ROLES.PROJECT_ENGINEER, ROLES.OPERATIONS_STAFF] },
+    { label: 'Material Tracking', path: '/documents/material-tracking', roles: [ROLES.ADMIN, ROLES.OPERATIONS_STAFF] },
   ]),
-  
-  createMenuItem('Clients', '/clients', Building2, MODULES.CLIENTS, [
-    { label: 'All Clients', path: '/clients' },
-    { label: 'Add Client', path: '/clients/create', roles: [ROLES.ADMIN, ROLES.OPERATIONS_STAFF] },
-  ]),
-  
-  createMenuItem('Reports', '/reports', BarChart3, MODULES.REPORTS),
-  
-  createMenuItem('Users', '/users', UserCog, MODULES.USERS, [
-    { label: 'All Users', path: '/users' },
-    { label: 'Add User', path: '/users/create' },
-    { label: 'Roles', path: '/users/roles' },
-  ]),
-  
-  createMenuItem('Settings', '/settings', Settings, MODULES.SETTINGS),
+  // Add Budget Tracking page as a direct menu item
+  createMenuItem('Budget', '/projects/budget', BarChart3, null),
+
+  // Clients: direct link, no dropdown
+  createMenuItem('Clients', '/clients', Building2, MODULES.CLIENTS),
+
+  // Reports menu item removed for viewer
+  createMenuItem('Reports', '/reports', BarChart3, MODULES.REPORTS, null, [ROLES.ADMIN, ROLES.OPERATIONS_STAFF, ROLES.PROJECT_ENGINEER]),
+
+  // Users: direct links to All Users and Roles (no dropdown)
+  createMenuItem('All Users', '/users', UserCog, MODULES.USERS),
+  createMenuItem('My Profile', '/profile', UserCog, null),
 ]
 
 /**
@@ -69,8 +69,16 @@ export const FULL_MENU = [
  */
 export const getMenuForRole = (role) => {
   return FULL_MENU.filter(item => {
+    // Hide Reports and Clients for viewer
+    if (role === ROLES.VIEWER && (item.label === 'Reports' || item.label === 'Clients')) {
+      return false
+    }
     // Check if user can access the module
     if (item.module && !canAccessModule(role, item.module)) {
+      return false
+    }
+    // If item has roles, check if role is allowed
+    if (item.roles && !item.roles.includes(role)) {
       return false
     }
     return true
@@ -97,7 +105,7 @@ export const MENU_SECTIONS = [
   },
   {
     title: 'Project Management',
-    items: ['Projects', 'Progress', 'Site Reports', 'Documents'],
+    items: ['Projects', 'Progress', 'Site Reports', 'Documents', 'Budget'],
   },
   {
     title: 'Operations',
@@ -105,7 +113,7 @@ export const MENU_SECTIONS = [
   },
   {
     title: 'Administration',
-    items: ['Users', 'Settings'],
+    items: ['All Users', 'My Profile'],
   },
 ]
 

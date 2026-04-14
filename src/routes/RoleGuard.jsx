@@ -18,6 +18,14 @@ function RoleGuard({ allowedRoles, redirectTo = '/dashboard' }) {
   // Check if user has required role
   const hasAccess = hasRole(allowedRoles)
 
+  console.log('RoleGuard DEBUG', {
+    user,
+    allowedRoles,
+    userRole: user?.role,
+    hasAccess,
+    location: location.pathname
+  });
+
   if (!hasAccess) {
     // Redirect to specified path or dashboard
     return <Navigate to={redirectTo} state={{ from: location }} replace />

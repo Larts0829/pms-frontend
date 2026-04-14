@@ -5,25 +5,46 @@
 /* ========================================
   WORKS - DESIGN SYSTEM
   Professional Light Construction Theme
-  ======================================== */
+  /* ========================================
+     SIDEBAR (Secondary Color Theme)
+     ======================================== */
 
-@layer base {
+  .sidebar {
+    @apply bg-yellow-50 border-r border-yellow-200 w-64 min-h-screen flex flex-col transition-all duration-300 shadow-lg;
+  }
+
+  .sidebar-header {
+    @apply px-6 py-5 border-b border-yellow-200 flex items-center gap-3 bg-yellow-100;
+  }
+
+  .sidebar-nav {
+    @apply flex-1 px-4 py-6 space-y-2 overflow-y-auto;
+  }
+
+  .sidebar-footer {
+    @apply px-6 py-4 border-t border-yellow-200 bg-yellow-100;
+  }
+
+  .sidebar .active {
+    @apply bg-yellow-200 text-yellow-900 font-semibold;
+  }
+
+  .sidebar a:hover {
+    @apply bg-yellow-100 text-yellow-700;
+  }
+
+  .sidebar .sidebar-logo {
+    @apply text-yellow-700;
+  }
+
+  .sidebar .sidebar-title {
+    @apply text-yellow-900 font-bold;
+  }
+
+  .sidebar .sidebar-section {
+    @apply text-yellow-700 uppercase text-xs tracking-wider mt-6 mb-2 px-2;
+  }
   :root {
-    /* Primary Colors - Yellow/Construction */
-    --yellow-50: 255 251 235;
-    --yellow-100: 254 243 199;
-    --yellow-200: 253 230 138;
-    --yellow-300: 252 211 77;
-    --yellow-400: 251 191 36;
-    --yellow-500: 245 158 11;
-    --yellow-600: 217 119 6;
-    --yellow-700: 180 83 9;
-    --yellow-800: 146 64 14;
-    --yellow-900: 120 53 15;
-
-    /* Dark/Black Colors - Text & Accents */
-    --dark-50: 249 250 251;
-    --dark-100: 243 244 246;
     --dark-200: 229 231 235;
     --dark-300: 209 213 219;
     --dark-400: 156 163 175;
@@ -111,7 +132,6 @@
     background: rgb(254 243 199);
     color: rgb(120 53 15);
   }
-}
 
 @layer components {
   /* ========================================
