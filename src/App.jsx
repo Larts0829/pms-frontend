@@ -97,7 +97,11 @@ function App() {
 
 
           {/* Budget Page - All roles (for demo) */}
-          <Route path="/projects/budget" element={<BudgetPage />} />
+
+          {/* Budget Page - Admin, Operations Staff, Project Engineer only (not for viewers) */}
+          <Route element={<RoleGuard allowedRoles={[ROLES.ADMIN, ROLES.OPERATIONS_STAFF, ROLES.PROJECT_ENGINEER]} />}>
+            <Route path="/projects/budget" element={<BudgetPage />} />
+          </Route>
 
           {/* Project Budget Tracking - Admin, Operations Staff only */}
           <Route element={<RoleGuard allowedRoles={[ROLES.ADMIN, ROLES.OPERATIONS_STAFF]} />}>
@@ -125,8 +129,8 @@ function App() {
 
           {/* Documents - All Roles Can View */}
           <Route path="/documents" element={<DocumentsListPage />} />
-          {/* Material Tracking - Admin, Operations Staff only */}
-          <Route element={<RoleGuard allowedRoles={[ROLES.ADMIN, ROLES.OPERATIONS_STAFF]} />}>
+          {/* Material Tracking - Admin, Operations Staff, Project Engineer */}
+          <Route element={<RoleGuard allowedRoles={[ROLES.ADMIN, ROLES.OPERATIONS_STAFF, ROLES.PROJECT_ENGINEER]} />}>
             <Route path="/documents/material-tracking" element={<MaterialTrackingPage />} />
             <Route path="/clients" element={<ClientsListPage />} />
             <Route path="/clients/create" element={<AddClientPage />} />

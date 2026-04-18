@@ -3,19 +3,67 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardBody } from '../../components/common/Card';
 import { Button, FormSelect } from '../../components';
-import { mockProjects } from '../projects/ProjectListPage';
+import { mockProjects as importedProjects } from '../projects/ProjectListPage';
+import { useAuth } from '../../hooks/useAuth';
+import { usePermissions } from '../../hooks/usePermissions';
 
+// Safe fallback for mockProjects in case import fails
+const mockProjects = importedProjects && Array.isArray(importedProjects) ? importedProjects : [];
 
 const initialProjects = [];
 
+// Dummy inventory materials for demo/placeholder
+const DUMMY_MATERIALS = [
+  { id: 1, name: 'Portland Cement', required: 500, available: 450, unit: 'bags' },
+  { id: 2, name: 'Steel Reinforcement Bars (12mm)', required: 2000, available: 1850, unit: 'kg' },
+  { id: 3, name: 'Concrete Sand', required: 300, available: 280, unit: 'cubic meters' },
+  { id: 4, name: 'Crushed Aggregates', required: 250, available: 220, unit: 'cubic meters' },
+  { id: 5, name: 'Ready Mix Concrete', required: 150, available: 120, unit: 'cubic meters' },
+  { id: 6, name: 'Plywood Sheets (18mm)', required: 400, available: 350, unit: 'sheets' },
+  { id: 7, name: 'Steel Formwork', required: 1500, available: 1400, unit: 'sq meters' },
+  { id: 8, name: 'Electrical Wiring (2.5mm)', required: 5000, available: 4500, unit: 'meters' },
+  { id: 9, name: 'PVC Pipes (50mm)', required: 800, available: 750, unit: 'meters' },
+  { id: 10, name: 'Clay Bricks', required: 50000, available: 45000, unit: 'pieces' },
+  { id: 11, name: 'Glass Panels (6mm)', required: 1200, available: 1100, unit: 'sq meters' },
+  { id: 12, name: 'Paint/Coating', required: 200, available: 180, unit: 'liters' },
+];
 
 export default function MaterialTrackingPage() {
-  const [projects, setProjects] = useState(initialProjects);
+  const { user } = useAuth()
+  const { hasRole } = usePermissions()
+  
+  // Determine if engineer
+  const isEngineer = hasRole('project_engineer')
+  
+  // Initialize with dummy project if engineer
+  const getInitialProjects = () => {
+    if (!isEngineer) return initialProjects
+    
+    // For engineers, create a dummy project with materials
+    return [
+      {
+        id: 1,
+        name: 'Westwood Tower Phase 1',
+        code: 'WTP-001',
+        materials: DUMMY_MATERIALS.map(mat => ({
+          ...mat,
+          id: 'mat_' + mat.id, // Ensure unique IDs
+        })),
+      },
+    ]
+  }
+  
+  const [projects, setProjects] = useState(getInitialProjects);
   const [newMaterial, setNewMaterial] = useState({});
   const [showAddProject, setShowAddProject] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [editProjectId, setEditProjectId] = useState(null);
   const [editMaterials, setEditMaterials] = useState([]);
+
+  // Get available projects for adding (engineers can't add, only ops/admin)
+  const getAvailableProjects = () => {
+    return mockProjects.filter(p => !projects.some(tracked => tracked.id === p.id))
+  }
 
   // Handler for adding a material to a project
   const handleAddMaterial = (projectId) => {
@@ -113,21 +161,29 @@ export default function MaterialTrackingPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <div>
               <h2 className="text-2xl font-bold text-dark-900 mb-1">Material Tracking</h2>
-              <p className="text-dark-600 text-base font-medium">Monitor and update material inventory for each project. Only projects in the system can be tracked.</p>
+              <p className="text-dark-600 text-base font-medium">{isEngineer ? 'Track and manage material inventory for your assigned project.' : 'Monitor and update material inventory for each project. Only projects in the system can be tracked.'}</p>
             </div>
-            <Button size="lg" variant="primary" onClick={handleShowAddProject} className="font-semibold shadow-md">+ Add Project</Button>
+            {!isEngineer && (
+              <Button 
+                size="lg" 
+                variant="primary" 
+                onClick={() => setShowAddProject(true)} 
+                className="font-semibold shadow-md"
+              >
+                + Add Project
+              </Button>
+            )}
           </div>
 
-          {/* Add Project Form */}
-          {showAddProject && (
+          {/* Add Project Form - Only shown to non-engineers */}
+          {showAddProject && !isEngineer && (
             <form className="mb-8 flex flex-col md:flex-row gap-3 md:items-end bg-dark-50 p-4 rounded-xl border border-dark-100" onSubmit={handleAddProject}>
               <FormSelect
                 label="Select Project"
                 className="min-w-[220px] flex-1"
                 value={selectedProjectId}
                 onChange={e => setSelectedProjectId(e.target.value)}
-                options={mockProjects
-                  .filter(p => !projects.some(tracked => tracked.id === p.id))
+                options={getAvailableProjects()
                   .map(p => ({ value: p.id, label: `${p.name} (${p.code})` }))}
                 required
               />
@@ -258,38 +314,104 @@ export default function MaterialTrackingPage() {
                       </div>
                     </div>
                   ) : (
-                    <table className="min-w-full text-base">
-                      <thead>
-                        <tr className="bg-dark-100 text-dark-700">
-                          <th className="px-4 py-2 text-left">Material</th>
-                          <th className="px-4 py-2 text-right">Required</th>
-                          <th className="px-4 py-2 text-right">Available</th>
-                          <th className="px-4 py-2 text-center">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {project.materials.length === 0 && (
-                          <tr><td colSpan={4} className="text-center text-dark-400 py-4">No materials added yet.</td></tr>
-                        )}
-                        {project.materials.map((mat) => {
-                          const isLow = mat.available < mat.required;
-                          return (
-                            <tr key={mat.id} className={isLow ? 'bg-red-50' : 'bg-white'}>
-                              <td className="px-4 py-3 font-semibold text-dark-900 whitespace-nowrap">{mat.name}</td>
-                              <td className="px-4 py-3 text-right text-dark-800 whitespace-nowrap">{mat.required} {mat.unit}</td>
-                              <td className="px-4 py-3 text-right text-dark-800 whitespace-nowrap">{mat.available} {mat.unit}</td>
-                              <td className="px-4 py-3 text-center">
-                                {isLow ? (
-                                  <span className="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold">Insufficient</span>
-                                ) : (
-                                  <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold">Sufficient</span>
-                                )}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                    <div>
+                      <table className="min-w-full text-base border-collapse">
+                        <thead>
+                          <tr className="bg-gradient-to-r from-blue-50 to-blue-100 border-b-2 border-blue-200">
+                            <th className="px-4 py-3 text-left text-dark-900 font-bold">Material</th>
+                            <th className="px-4 py-3 text-center text-dark-900 font-bold">Required</th>
+                            <th className="px-4 py-3 text-center text-dark-900 font-bold">Available</th>
+                            <th className="px-4 py-3 text-center text-dark-900 font-bold">Utilization</th>
+                            <th className="px-4 py-3 text-center text-dark-900 font-bold">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {project.materials.length === 0 && (
+                            <tr><td colSpan={5} className="text-center text-dark-400 py-8 italic">No materials in inventory.</td></tr>
+                          )}
+                          {project.materials.map((mat, idx) => {
+                            const utilization = Math.round((mat.available / mat.required) * 100);
+                            const isLow = mat.available < mat.required;
+                            const isCritical = utilization < 30;
+                            const isWarning = utilization < 70;
+                            
+                            // Determine row background
+                            let rowBg = 'bg-white';
+                            if (isCritical) rowBg = 'bg-red-50';
+                            else if (isWarning) rowBg = 'bg-yellow-50';
+                            else rowBg = 'bg-green-50';
+                            
+                            // Status badge styling
+                            let statusBg = 'bg-green-100', statusText = 'text-green-700', statusLabel = 'In Stock';
+                            if (isCritical) {
+                              statusBg = 'bg-red-100';
+                              statusText = 'text-red-700';
+                              statusLabel = 'Critical';
+                            } else if (isWarning) {
+                              statusBg = 'bg-amber-100';
+                              statusText = 'text-amber-700';
+                              statusLabel = 'Low Stock';
+                            }
+                            
+                            // Progress bar color
+                            let barColor = 'bg-green-500';
+                            if (isCritical) barColor = 'bg-red-500';
+                            else if (isWarning) barColor = 'bg-amber-500';
+                            
+                            return (
+                              <tr key={mat.id} className={`${rowBg} border-b border-dark-100 hover:shadow-sm transition-shadow`}>
+                                <td className="px-4 py-4 font-semibold text-dark-900">{mat.name}</td>
+                                <td className="px-4 py-4 text-center text-dark-800 font-medium">{mat.required.toLocaleString()}</td>
+                                <td className="px-4 py-4 text-center text-dark-800 font-medium">{mat.available.toLocaleString()}</td>
+                                <td className="px-4 py-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="flex-1">
+                                      <div className="w-full bg-dark-200 rounded-full h-2 overflow-hidden">
+                                        <div
+                                          className={`${barColor} h-2 rounded-full transition-all duration-300`}
+                                          style={{ width: `${Math.min(utilization, 100)}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                    <span className={`text-xs font-bold whitespace-nowrap px-2 py-1 rounded-lg ${statusBg} ${statusText}`}>
+                                      {utilization}%
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="px-4 py-4 text-center">
+                                  <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${statusBg} ${statusText} shadow-sm`}>
+                                    {isCritical && <span className="animate-pulse">●</span>}
+                                    {statusLabel}
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                      
+                      {/* Summary Stats */}
+                      {project.materials.length > 0 && (
+                        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                            <p className="text-dark-600 text-sm font-semibold mb-1">Total Materials</p>
+                            <p className="text-3xl font-bold text-blue-900">{project.materials.length}</p>
+                          </div>
+                          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                            <p className="text-dark-600 text-sm font-semibold mb-1">In Stock</p>
+                            <p className="text-3xl font-bold text-green-900">
+                              {project.materials.filter(m => m.available >= m.required).length}
+                            </p>
+                          </div>
+                          <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-4 border border-red-200">
+                            <p className="text-dark-600 text-sm font-semibold mb-1">Critical/Low Stock</p>
+                            <p className="text-3xl font-bold text-red-900">
+                              {project.materials.filter(m => m.available < m.required).length}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

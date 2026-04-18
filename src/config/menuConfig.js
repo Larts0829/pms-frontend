@@ -13,12 +13,13 @@ import {
 import { ROLES, MODULES, canAccessModule } from './permissions'
 
 // Menu item structure
-const createMenuItem = (label, path, icon, module = null, children = null) => ({
+const createMenuItem = (label, path, icon, module = null, children = null, roles = null) => ({
   label,
   path,
   icon,
   module,
   children,
+  roles,
 })
 
 // Full navigation structure
@@ -46,10 +47,10 @@ export const FULL_MENU = [
     { label: 'Document Library', path: '/documents' },
     // Only show upload for admin/engineer/ops
     // { label: 'Upload Document', path: '/documents/upload', roles: [ROLES.ADMIN, ROLES.PROJECT_ENGINEER, ROLES.OPERATIONS_STAFF] },
-    { label: 'Material Tracking', path: '/documents/material-tracking', roles: [ROLES.ADMIN, ROLES.OPERATIONS_STAFF] },
+    { label: 'Material Tracking', path: '/documents/material-tracking', roles: [ROLES.ADMIN, ROLES.OPERATIONS_STAFF, ROLES.PROJECT_ENGINEER] },
   ]),
-  // Add Budget Tracking page as a direct menu item
-  createMenuItem('Budget', '/projects/budget', BarChart3, null),
+  // Add Budget Tracking page as a direct menu item (not for viewers/clients)
+  createMenuItem('Budget', '/projects/budget', BarChart3, null, null, [ROLES.ADMIN, ROLES.OPERATIONS_STAFF, ROLES.PROJECT_ENGINEER]),
 
   // Clients: direct link, no dropdown
   createMenuItem('Clients', '/clients', Building2, MODULES.CLIENTS),

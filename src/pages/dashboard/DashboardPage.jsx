@@ -18,15 +18,25 @@ import { ProjectStatusBar, PortfolioPie, ProgressLine } from '../../components/c
 import { ProgressBar } from '../../components/common/Progress'
 import { StatusBadge } from '../../components/common/Badge'
 import { useEffect, useRef, useState } from 'react'
-// Slideshow images (client-specific, local images)
+
+// Import slideshow images as modules for proper production bundling
+import img1 from '../../images/portfolio-images/client-images/Interior cafe design.jpg'
+import img2 from '../../images/portfolio-images/client-images/download.jpg'
+import img3 from '../../images/portfolio-images/client-images/download (1).jpg'
+import img4 from '../../images/portfolio-images/client-images/download (2).jpg'
+import img5 from '../../images/portfolio-images/client-images/House.jpg'
+import img6 from '../../images/portfolio-images/client-images/terrace deck decor idea lighting plants boho trendy classy.jpg'
+import img7 from '../../images/portfolio-images/client-images/Doheny Estates - Modern - Bedroom - Los Angeles - by Foundation Landscape Design _ Houzz.jpg'
+
+// Slideshow images (client-specific, properly imported for production)
 const progressImages = [
-  '/src/images/portfolio-images/client-images/Interior cafe design.jpg',
-  '/src/images/portfolio-images/client-images/download.jpg',
-  '/src/images/portfolio-images/client-images/download (1).jpg',
-  '/src/images/portfolio-images/client-images/download (2).jpg',
-  '/src/images/portfolio-images/client-images/House.jpg',
-  '/src/images/portfolio-images/client-images/terrace deck decor idea lighting plants boho trendy classy.jpg',
-  '/src/images/portfolio-images/client-images/Doheny Estates - Modern - Bedroom - Los Angeles - by Foundation Landscape Design _ Houzz.jpg',
+  img1,
+  img2,
+  img3,
+  img4,
+  img5,
+  img6,
+  img7,
 ]
 
 function ProgressSlideshow() {

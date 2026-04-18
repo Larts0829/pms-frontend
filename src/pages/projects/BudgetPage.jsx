@@ -6,6 +6,9 @@ import { useEffect } from 'react';
 import { Sparklines, SparklinesLine } from 'react-sparklines';
 import BudgetTransactions from './BudgetTransactions';
 import Modal from '../../components/common/Modal';
+import { useAuth } from '../../hooks/useAuth';
+import { usePermissions } from '../../hooks/usePermissions';
+import { ROLES } from '../../config/permissions';
 
 
 // Mock data for demonstration
@@ -30,6 +33,7 @@ const mockTransactions = {
     { date: '2026-04-06', type: 'Income', description: 'Budget Allocation', amount: 300000 },
   ],
 };
+
 
 
 const analytics = [
@@ -126,6 +130,8 @@ function SummaryCard({ label, value, trend, percent, up, color }) {
 
 
   function BudgetPage() {
+  const { user } = useAuth()
+  const { hasRole } = usePermissions()
 
   const [budgets] = useState(mockBudgets);
   const [selectedProject, setSelectedProject] = useState(null);
@@ -136,16 +142,69 @@ function SummaryCard({ label, value, trend, percent, up, color }) {
   const handleProjectClick = (project) => setSelectedProject(project);
   const closeModal = () => setSelectedProject(null);
 
+  // Filter budgets based on user role and assigned projects
+  const getAccessibleBudgets = () => {
+    // Engineers can only see their assigned project budgets
+    const isEngineer = user?.role === ROLES.PROJECT_ENGINEER
+    
+    if (isEngineer && user?.assignedProjectIds && Array.isArray(user.assignedProjectIds) && user.assignedProjectIds.length > 0) {
+      // Map prj_001 -> 1, prj_002 -> 2, prj_003 -> 3, etc.
+      const projectIndices = user.assignedProjectIds.map(id => {
+        if (typeof id === 'string') {
+          const match = id.match(/\d+/)
+          return match ? parseInt(match[0]) : null
+        }
+        return null
+      }).filter(id => id !== null)
+      
+      const filtered = budgets.filter(b => projectIndices.includes(b.id))
+      return filtered
+    }
+    
+    // Operations staff and admin see all budgets
+    return budgets
+  }
+
+  const accessibleBudgets = getAccessibleBudgets()
+
+  // Calculate analytics from accessible budgets
+  const accessibleAnalytics = [
+    {
+      label: 'Total Budget',
+      value: accessibleBudgets.reduce((a, b) => a + b.budget, 0),
+      trend: accessibleBudgets.map(b => b.budget),
+      percent: 4.2,
+      up: true,
+      color: 'blue',
+    },
+    {
+      label: 'Total Spent',
+      value: accessibleBudgets.reduce((a, b) => a + b.spent, 0),
+      trend: accessibleBudgets.map(b => b.spent),
+      percent: -2.1,
+      up: false,
+      color: 'yellow',
+    },
+    {
+      label: 'Total Remaining',
+      value: accessibleBudgets.reduce((a, b) => a + (b.budget - b.spent), 0),
+      trend: accessibleBudgets.map(b => b.budget - b.spent),
+      percent: 1.7,
+      up: true,
+      color: 'green',
+    },
+  ]
+
   // Filtered data logic (mocked for now)
   const filteredBudgets =
-    projectFilter === 'All' ? budgets : budgets.filter(b => b.project === projectFilter);
+    projectFilter === 'All' ? accessibleBudgets : accessibleBudgets.filter(b => b.project === projectFilter);
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto py-8">
 
       {/* Premium Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {analytics.map((a, idx) => (
+        {accessibleAnalytics.map((a, idx) => (
           <SummaryCard key={a.label} {...a} />
         ))}
       </div>
@@ -171,7 +230,7 @@ function SummaryCard({ label, value, trend, percent, up, color }) {
                 onChange={e => setProjectFilter(e.target.value)}
               >
                 <option value="All">All Projects</option>
-                {budgets.map(b => (
+                {accessibleBudgets.map(b => (
                   <option key={b.id} value={b.project}>{b.project}</option>
                 ))}
               </select>
@@ -179,46 +238,100 @@ function SummaryCard({ label, value, trend, percent, up, color }) {
           </div>
         </CardHeader>
         <CardBody>
-          <StunningGroupedBar
-            data={filteredBudgets.map(b => ({
-              name: b.project,
-              Budget: b.budget,
-              Spent: b.spent,
-              Remaining: b.budget - b.spent,
-            }))}
-            height={340}
-          />
+          {/* Layout: If only 1 project (engineer), show side-by-side; otherwise show full-width chart */}
+          {accessibleBudgets.length === 1 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              {/* Left: Project Card */}
+              <div className="flex justify-center">
+                {accessibleBudgets.map((b, idx) => {
+                  const percent = Math.round((b.spent / b.budget) * 100);
+                  let statusColor = 'text-green-700', ring = 'ring-green-200';
+                  if (percent > 90) { statusColor = 'text-red-700'; ring = 'ring-red-200'; }
+                  else if (percent > 70) { statusColor = 'text-yellow-700'; ring = 'ring-yellow-200'; }
+                  return (
+                    <div
+                      key={b.id}
+                      className={`group relative w-full max-w-sm bg-white/70 backdrop-blur rounded-2xl shadow-xl border border-dark-100 p-8 flex flex-col items-center transition-transform duration-200 hover:scale-[1.02] hover:shadow-2xl hover:bg-white/90 cursor-pointer ${ring}`}
+                    >
+                      <ModernCircularProgress value={percent} size={130} colorIdx={idx} />
+                      <div className="mt-6 text-center w-full">
+                        <div className="text-lg font-bold text-dark-900 mb-2">{b.project}</div>
+                        <div className="text-sm text-dark-500 mb-3">{percent}% Utilized</div>
+                        <div className="flex justify-between text-xs text-dark-400 mb-2">
+                          <span>Budget</span>
+                          <span className="font-semibold text-blue-700">{formatCurrency(b.budget)}</span>
+                        </div>
+                        <div className="flex justify-between text-xs text-dark-400 mb-2">
+                          <span>Spent</span>
+                          <span className="font-semibold text-yellow-700">{formatCurrency(b.spent)}</span>
+                        </div>
+                        <div className="flex justify-between text-xs text-dark-400">
+                          <span>Remaining</span>
+                          <span className="font-semibold text-green-700">{formatCurrency(b.budget - b.spent)}</span>
+                        </div>
+                        <div className="mt-4 text-xs text-dark-400">Burn Rate: <span className="font-semibold text-dark-700">₱{Math.round(b.spent / 5).toLocaleString()}</span>/mo</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Right: Smaller Chart */}
+              <div>
+                <StunningGroupedBar
+                  data={filteredBudgets.map(b => ({
+                    name: b.project,
+                    Budget: b.budget,
+                    Spent: b.spent,
+                    Remaining: b.budget - b.spent,
+                  }))}
+                  height={280}
+                />
+              </div>
+            </div>
+          ) : (
+            /* Full-width chart for multiple projects */
+            <StunningGroupedBar
+              data={filteredBudgets.map(b => ({
+                name: b.project,
+                Budget: b.budget,
+                Spent: b.spent,
+                Remaining: b.budget - b.spent,
+              }))}
+              height={340}
+            />
+          )}
         </CardBody>
       </Card>
 
-      {/* Project Cards Section - Premium Design */}
-      <div className="mb-10">
-        <div className="flex flex-wrap gap-6 justify-start">
-          {budgets.map((b, idx) => {
-            const percent = Math.round((b.spent / b.budget) * 100);
-            let status = 'On Track', statusColor = 'text-green-700', ring = 'ring-green-200';
-            if (percent > 90) { status = 'Over Budget'; statusColor = 'text-red-700'; ring = 'ring-red-200'; }
-            else if (percent > 70) { status = 'Warning'; statusColor = 'text-yellow-700'; ring = 'ring-yellow-200'; }
-            return (
-              <div
-                key={b.id}
-                className={`group relative min-w-[260px] max-w-xs bg-white/70 backdrop-blur rounded-2xl shadow-xl border border-dark-100 p-6 flex flex-col items-center transition-transform duration-200 hover:scale-[1.04] hover:shadow-2xl hover:bg-white/90 cursor-pointer ${ring}`}
-                style={{ transition: 'box-shadow 0.2s, transform 0.2s' }}
-                onClick={() => handleProjectClick(b)}
-              >
-                <div className="absolute top-3 right-3 z-10">
-                  <span className={`px-3 py-1 rounded-full bg-dark-50 border border-dark-100 text-xs font-bold ${statusColor} shadow-sm`}>{status}</span>
-                </div>
-                <ModernCircularProgress value={percent} size={110} colorIdx={idx} />
-                <div className="mt-4 text-center w-full">
-                  <div className="text-lg font-bold text-dark-900 mb-1 truncate">{b.project}</div>
-                  <div className="text-sm text-dark-500 mb-2">{percent}% Utilized</div>
-                  <div className="flex justify-between text-xs text-dark-400 mb-1">
-                    <span>Budget</span>
-                    <span className="font-semibold text-blue-700">{formatCurrency(b.budget)}</span>
+      {/* Project Cards Section - Premium Design (Only for multiple projects) */}
+      {accessibleBudgets.length > 1 && (
+        <div className="mb-10">
+          <div className="flex flex-wrap gap-6 justify-start">
+            {accessibleBudgets.map((b, idx) => {
+              const percent = Math.round((b.spent / b.budget) * 100);
+              let status = 'On Track', statusColor = 'text-green-700', ring = 'ring-green-200';
+              if (percent > 90) { status = 'Over Budget'; statusColor = 'text-red-700'; ring = 'ring-red-200'; }
+              else if (percent > 70) { status = 'Warning'; statusColor = 'text-yellow-700'; ring = 'ring-yellow-200'; }
+              return (
+                <div
+                  key={b.id}
+                  className={`group relative min-w-[260px] max-w-xs bg-white/70 backdrop-blur rounded-2xl shadow-xl border border-dark-100 p-6 flex flex-col items-center transition-transform duration-200 hover:scale-[1.04] hover:shadow-2xl hover:bg-white/90 cursor-pointer ${ring}`}
+                  style={{ transition: 'box-shadow 0.2s, transform 0.2s' }}
+                  onClick={() => handleProjectClick(b)}
+                >
+                  <div className="absolute top-3 right-3 z-10">
+                    <span className={`px-3 py-1 rounded-full bg-dark-50 border border-dark-100 text-xs font-bold ${statusColor} shadow-sm`}>{status}</span>
                   </div>
-                  <div className="flex justify-between text-xs text-dark-400 mb-1">
-                    <span>Spent</span>
+                  <ModernCircularProgress value={percent} size={110} colorIdx={idx} />
+                  <div className="mt-4 text-center w-full">
+                    <div className="text-lg font-bold text-dark-900 mb-1 truncate">{b.project}</div>
+                    <div className="text-sm text-dark-500 mb-2">{percent}% Utilized</div>
+                    <div className="flex justify-between text-xs text-dark-400 mb-1">
+                      <span>Budget</span>
+                      <span className="font-semibold text-blue-700">{formatCurrency(b.budget)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-dark-400 mb-1">
+                      <span>Spent</span>
                     <span className="font-semibold text-yellow-700">{formatCurrency(b.spent)}</span>
                   </div>
                   <div className="flex justify-between text-xs text-dark-400">
@@ -235,6 +348,7 @@ function SummaryCard({ label, value, trend, percent, up, color }) {
           })}
         </div>
       </div>
+      )}
 
       {/* Projects Table - Premium, Searchable, Sortable */}
       <Card>

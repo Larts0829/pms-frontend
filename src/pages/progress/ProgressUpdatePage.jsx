@@ -70,8 +70,8 @@ function ProgressUpdatePage() {
 
   const assignedProjectIds = user?.assignedProjectIds || []
   const allowedProjects = isAdminOrOps
-    ? mockProjects
-    : mockProjects.filter((p) => assignedProjectIds.includes(p.value))
+    ? (Array.isArray(mockProjects) ? mockProjects : [])
+    : (Array.isArray(mockProjects) ? mockProjects.filter((p) => assignedProjectIds.includes(p.value)) : [])
 
   const preselectedProject = searchParams.get('project')
   const defaultSelectedProject = preselectedProject || (isProjectEngineer ? allowedProjects[0]?.value : '')
@@ -108,7 +108,7 @@ function ProgressUpdatePage() {
 
   // Get phases for selected project
   const selectedProjectData = mockProjects.find(p => p.value === selectedProject)
-  const phases = selectedProjectData?.phases || []
+  const phases = (selectedProjectData?.phases && Array.isArray(selectedProjectData.phases)) ? selectedProjectData.phases : []
 
   // Update previous progress when phase changes
   const handlePhaseChange = (e) => {

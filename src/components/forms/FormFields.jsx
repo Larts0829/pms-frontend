@@ -65,6 +65,9 @@ FormInput.displayName = 'FormInput'
  */
 const FormSelect = forwardRef(
   ({ label, error, hint, options = [], placeholder, className, ...props }, ref) => {
+    // Defensive check: ensure options is always an array
+    const safeOptions = Array.isArray(options) ? options : [];
+    
     return (
       <div className={cn('space-y-2', className)}>
         {label && (
@@ -93,7 +96,7 @@ const FormSelect = forwardRef(
               {placeholder}
             </option>
           )}
-          {options.map((option) => (
+          {safeOptions.map((option) => (
             <option
               key={option.value}
               value={option.value}

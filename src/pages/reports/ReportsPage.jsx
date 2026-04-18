@@ -150,14 +150,14 @@ function ReportsPage() {
 
 
   // Engineer: only see their assigned project
-  let scopedProjectOptions = projectOptions;
+  let scopedProjectOptions = Array.isArray(projectOptions) ? projectOptions : [];
   let engineerProject = null;
   const isEngineer = hasRole(ROLES.PROJECT_ENGINEER);
   if (isEngineer && user?.assignedProjectIds && user.assignedProjectIds.length === 1) {
-    engineerProject = projectOptions.find(opt => opt.value === user.assignedProjectIds[0]);
+    engineerProject = scopedProjectOptions.find(opt => opt.value === user.assignedProjectIds[0]);
     scopedProjectOptions = engineerProject ? [engineerProject] : [];
   } else if (isClientViewer) {
-    scopedProjectOptions = [projectOptions[1]];
+    scopedProjectOptions = (Array.isArray(projectOptions) && projectOptions.length > 1) ? [projectOptions[1]] : [];
   }
 
   const formatDate = (dateString) => {

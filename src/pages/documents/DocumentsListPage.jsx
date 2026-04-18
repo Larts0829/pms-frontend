@@ -75,7 +75,9 @@ const getFileIcon = (type) => {
   }
 };
 
-const categoryOptions = Object.entries(categories).map(([value, { label }]) => ({ value, label }));
+const categoryOptions = (categories && typeof categories === 'object') 
+  ? Object.entries(categories).map(([value, { label }]) => ({ value, label }))
+  : [];
 
 function DocumentsListPage() {
   // Permissions and user context
